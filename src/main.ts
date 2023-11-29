@@ -28,7 +28,8 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['*'],
+    origin: true, // 모든 origin을 허용하려면 true로 설정
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
   // 'http://3.34.126.21',
