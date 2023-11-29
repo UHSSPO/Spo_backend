@@ -28,13 +28,14 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: true, // 모든 origin을 허용하려면 true로 설정
+    origin: [
+      'http://3.34.126.21',
+      'http://localhost:3000',
+      'https://kauth.kakao.com',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  // 'http://3.34.126.21',
-  //   'http://localhost:3000',
-  //   'https://kauth.kakao.com',
   await app.listen(3001);
 }
 bootstrap();
