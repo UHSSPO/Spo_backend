@@ -28,13 +28,12 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: [
-      'http://3.34.126.21',
-      'http://localhost:3000',
-      'https://kauth.kakao.com',
-    ],
+    origin: ['*'],
     credentials: true,
   });
+  // 'http://3.34.126.21',
+  //   'http://localhost:3000',
+  //   'https://kauth.kakao.com',
   await app.listen(3001);
 }
 bootstrap();
