@@ -27,6 +27,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
           host: configService.get<string>('DB_HOST'),
           database: configService.get<string>('DB_NAME'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          charset: 'utf8mb4',
+          collation: 'utf8mb4_unicode_ci',
           synchronize: false,
           logger: new DatabaseLogger(),
         };

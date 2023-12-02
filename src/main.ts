@@ -11,8 +11,8 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   // swager
   const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
+    .setTitle('Spo Api')
+    .setDescription('The Spo API description')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
