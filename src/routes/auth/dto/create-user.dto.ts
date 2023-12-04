@@ -1,4 +1,4 @@
-import { IsNotEmpty, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class KakaoLoginDto {
@@ -45,14 +45,12 @@ export class CreateUserDto {
   pw: string;
 
   @IsNotEmpty({ message: '생년월일은 필수 입니다.' })
-  @MinLength(1)
-  @MaxLength(6)
   @ApiProperty({
     description: '생년월일',
     required: true,
     example: '000525',
   })
-  dataOfBirth: string;
+  dateOfBirth: string;
 
   @IsNotEmpty()
   @ApiProperty({
@@ -60,10 +58,9 @@ export class CreateUserDto {
     required: true,
     example: 'kakao',
   })
-  signInChannel: string;
+  signUpChannel: string;
 
   @IsNotEmpty({ message: '닉네임은 필수 입니다.' })
-  @MinLength(1)
   @MaxLength(10, { message: '닉네임은 10자 이하 입니다.' })
   @ApiProperty({
     description: '닉네임',

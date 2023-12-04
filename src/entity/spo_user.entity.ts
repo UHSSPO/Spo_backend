@@ -23,7 +23,7 @@ export class Spo_User {
 
   @Column({ name: 'SIGN_CHNL' })
   @ApiProperty({ description: '가입채널', example: 'kakao' })
-  signInChannel: string;
+  signUpChannel: string;
 
   @Column({ name: 'INVEST_PROP', nullable: true })
   @ApiProperty({ description: '투자성향', example: '01' })
@@ -51,5 +51,5 @@ export class Spo_User {
 
   @Column({ name: 'DATE_BIRTH' })
   @ApiProperty({ description: '생년월일', example: '000525' })
-  dataOfBirth: string;
+  dateOfBirth: string;
 }

@@ -60,10 +60,10 @@ export class AuthService {
         const user = new Spo_User();
         user.email = reqBody.email;
         user.pwd = encryptedPassword;
-        user.signInChannel = reqBody.signInChannel;
+        user.signUpChannel = reqBody.signUpChannel;
         user.userRole = 'USR';
         user.nickName = reqBody.nickName;
-        user.dataOfBirth = reqBody.dataOfBirth;
+        user.dateOfBirth = reqBody.dateOfBirth;
 
         await manager.save(user);
         return user;
