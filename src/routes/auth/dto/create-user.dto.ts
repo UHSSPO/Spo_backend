@@ -42,7 +42,7 @@ export class CreateUserDto {
     required: true,
     example: 'dasdsdasdsafasdfafzxczx',
   })
-  pw: string;
+  pwd: string;
 
   @IsNotEmpty({ message: '생년월일은 필수 입니다.' })
   @ApiProperty({
