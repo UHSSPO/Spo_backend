@@ -6,10 +6,12 @@ import { AuthModule } from './routes/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import DatabaseLogger from './common/logger/databaseLogger';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     AuthModule,
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:
