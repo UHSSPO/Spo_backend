@@ -8,10 +8,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'SPO_USR' })
-export class Spo_User {
+export class SpoUser {
   @PrimaryGeneratedColumn({ name: 'USR_SEQ' })
   @ApiProperty({ description: '유저일련번호', example: '1' })
-  userSequence: string;
+  userSequence: number;
 
   @Column({ name: 'EMAIL' })
   @ApiProperty({ description: '유저일련번호', example: 'test@naver.com' })

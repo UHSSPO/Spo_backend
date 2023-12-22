@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import DatabaseLogger from './common/logger/databaseLogger';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
+import { BatchService } from './routes/batch/batch.service';
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, BatchService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {

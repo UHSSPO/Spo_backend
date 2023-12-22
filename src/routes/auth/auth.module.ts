@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Spo_User } from '../../entity/spo_user.entity';
+import { SpoUser } from '../../entity/spo_user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
@@ -13,7 +13,7 @@ import { LocalStrategy } from '../../auth/local.strategy';
 @Module({
   imports: [
     HttpModule,
-    TypeOrmModule.forFeature([Spo_User]),
+    TypeOrmModule.forFeature([SpoUser]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

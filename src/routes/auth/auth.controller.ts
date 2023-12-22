@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto, KakaoLoginDto } from './dto/create-user.dto';
 import { KakaoLoginResDto, LoginResDto } from './dto/res.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
-import { Spo_User } from '../../entity/spo_user.entity';
+import { SpoUser } from '../../entity/spo_user.entity';
 import LoginDto from './dto/login.dto';
 import { LocalAuthGuard } from '../../auth/local-auth.guard';
 
@@ -40,9 +40,9 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: Spo_User,
+    type: SpoUser,
   })
-  singUp(@Body() reqBody: CreateUserDto): Promise<Spo_User> {
+  singUp(@Body() reqBody: CreateUserDto): Promise<SpoUser> {
     return this.authService.signUp(reqBody);
   }
 
@@ -55,7 +55,7 @@ export class AuthController {
     type: LoginResDto,
   })
   @ApiBody({ type: LoginDto })
-  async login(@Request() req): Promise<any> {
+  async login(@Request() req): Promise<LoginResDto> {
     return this.authService.login(req.user);
   }
 }

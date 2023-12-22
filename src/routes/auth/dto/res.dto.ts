@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { Spo_User } from '../../../entity/spo_user.entity';
+import { SpoUser } from '../../../entity/spo_user.entity';
 
 export class KakaoLoginResDto {
   @ApiProperty({
@@ -17,7 +17,7 @@ export class KakaoLoginResDto {
   email: string;
 }
 
-export class UserDto extends OmitType(Spo_User, [
+export class UserDto extends OmitType(SpoUser, [
   'pwd',
   'deleteYn',
   'createdAt',

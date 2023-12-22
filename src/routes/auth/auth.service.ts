@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcrypt';
-import { Spo_User } from '../../entity/spo_user.entity';
+import { SpoUser } from '../../entity/spo_user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -13,8 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
   constructor(
     private readonly http: HttpService,
-    @InjectRepository(Spo_User)
-    private userRepository: Repository<Spo_User>,
+    @InjectRepository(SpoUser)
+    private userRepository: Repository<SpoUser>,
     private configService: ConfigService,
     private dataSource: DataSource,
     private jwtService: JwtService,
@@ -53,13 +53,13 @@ export class AuthService {
     return response;
   }
 
-  async signUp(reqBody: CreateUserDto): Promise<Spo_User> {
+  async signUp(reqBody: CreateUserDto): Promise<SpoUser> {
     const user = await this.getUserByUserEmail(reqBody.email);
 
     if (!user) {
       const encryptedPassword = await this.encryptPassword(reqBody.pwd);
       const savedUser = await this.dataSource.transaction(async (manager) => {
-        const user = new Spo_User();
+        const user = new SpoUser();
         user.email = reqBody.email;
         user.pwd = encryptedPassword;
         user.signUpChannel = reqBody.signUpChannel;
@@ -79,7 +79,7 @@ export class AuthService {
     }
   }
 
-  async login(req: Spo_User) {
+  async login(req: SpoUser) {
     const payload = {
       email: req.email,
       nickName: req.nickName,
