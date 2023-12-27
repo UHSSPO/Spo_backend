@@ -10,7 +10,7 @@ import { Exclude } from 'class-transformer';
 @Entity({ name: 'SPO_USR' })
 export class SpoUser {
   @PrimaryGeneratedColumn({ name: 'USR_SEQ' })
-  @ApiProperty({ description: '유저일련번호', example: '1' })
+  @ApiProperty({ description: '유저일련번호', example: 11 })
   userSequence: number;
 
   @Column({ name: 'EMAIL' })

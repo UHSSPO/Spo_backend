@@ -8,6 +8,7 @@ import { SpoUser } from '../../entity/spo_user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { LoginResDto } from './dto/res.dto';
 
 @Injectable()
 export class AuthService {
@@ -79,7 +80,7 @@ export class AuthService {
     }
   }
 
-  async login(req: SpoUser) {
+  async login(req: SpoUser): Promise<LoginResDto> {
     const payload = {
       email: req.email,
       nickName: req.nickName,
@@ -93,13 +94,13 @@ export class AuthService {
     };
   }
 
-  async getUserByUserEmail(email: string) {
+  async getUserByUserEmail(email: string): Promise<SpoUser> {
     return await this.userRepository.findOneBy({
       email,
     });
   }
 
-  async encryptPassword(password: string) {
+  async encryptPassword(password: string): Promise<string> {
     const numberSalt = parseInt(
       this.configService.get<string>('DEFAULT_SALT'),
       10,
@@ -107,7 +108,7 @@ export class AuthService {
     return hash(password, numberSalt);
   }
 
-  async validateUser(email: string, pwd: string) {
+  async validateUser(email: string, pwd: string): Promise<SpoUser> {
     const user = await this.getUserByUserName(email);
 
     if (user) {
@@ -120,7 +121,7 @@ export class AuthService {
     }
   }
 
-  async getUserByUserName(email: string) {
+  async getUserByUserName(email: string): Promise<SpoUser> {
     return await this.userRepository.findOneBy({
       email,
     });

@@ -9,7 +9,7 @@ import { ApiProperty } from '@nestjs/swagger';
 @Entity({ name: 'SPO_STK_INFO' })
 export class SpoStockInfo {
   @PrimaryGeneratedColumn({ name: 'STK_INFO_SEQ' })
-  @ApiProperty({ description: '주식 상장 정보 일련번호', example: '1' })
+  @ApiProperty({ description: '주식 상장 정보 일련번호', example: 1 })
   stockInfoSequence: number;
 
   @Column({ name: 'BAS_DT' })
