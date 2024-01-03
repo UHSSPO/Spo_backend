@@ -1,6 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { LoggingMiddleware } from './common/middleware/logging.middleware';
 import { AuthModule } from './routes/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -40,8 +38,8 @@ import { BatchModule } from './routes/batch/batch.module';
       },
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService, BatchService],
+  controllers: [],
+  providers: [BatchService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {
