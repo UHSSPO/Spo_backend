@@ -16,8 +16,7 @@ export class BatchService implements OnApplicationBootstrap {
   private krxListedInfoResData: Array<IKrxListedInfoRes> = [];
 
   onApplicationBootstrap() {
-    // this.shouldRunBatch = process.env.NODE_ENV !== 'dev';
-    this.shouldRunBatch = true;
+    this.shouldRunBatch = process.env.NODE_ENV !== 'dev';
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_4PM) // 매일 오후 4시에 실행
