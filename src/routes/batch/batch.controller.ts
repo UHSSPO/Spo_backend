@@ -4,7 +4,7 @@ import { BatchService } from './batch.service';
 @Controller('batch')
 export class BatchController {
   constructor(private batchService: BatchService) {}
-  @Get('/')
+  @Get('/stock')
   stockBatchTask() {
     return this.batchService.stockBatchTask();
   }
