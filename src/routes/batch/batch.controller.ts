@@ -8,4 +8,14 @@ export class BatchController {
   stockBatchTask() {
     return this.batchService.stockBatchTask();
   }
+
+  @Get('/fina')
+  finaBatchTask() {
+    return this.batchService.getFinaStatInfo();
+  }
+
+  @Get('/inco')
+  incoBatchTask() {
+    return this.batchService.getIncoStatInfo();
+  }
 }

@@ -5,7 +5,7 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcrypt';
 import { SpoUser } from '../../entity/spo_user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/req.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { LoginResDto } from './dto/res.dto';
@@ -46,9 +46,12 @@ export class AuthService {
       this.http.get(userInfoUrl, { headers: userInfoHeaders }),
     );
 
+    const user = await this.getUserByUserEmail(data.kakao_account.email);
+
     const response = {
       nickName: data.kakao_account.profile.nickname,
       email: data.kakao_account.email,
+      check: !!user,
     };
 
     return response;
@@ -109,7 +112,7 @@ export class AuthService {
   }
 
   async validateUser(email: string, pwd: string): Promise<SpoUser> {
-    const user = await this.getUserByUserName(email);
+    const user = await this.getUserByUserEmail(email);
 
     if (user) {
       const match = await compare(pwd, user.pwd);
@@ -119,11 +122,5 @@ export class AuthService {
         return null;
       }
     }
-  }
-
-  async getUserByUserName(email: string): Promise<SpoUser> {
-    return await this.userRepository.findOneBy({
-      email,
-    });
   }
 }

@@ -15,6 +15,13 @@ export class KakaoLoginResDto {
     required: true,
   })
   email: string;
+
+  @ApiProperty({
+    example: true,
+    description: '중복 이메일 체크',
+    required: true,
+  })
+  check: boolean;
 }
 
 export class UserDto extends OmitType(SpoUser, [

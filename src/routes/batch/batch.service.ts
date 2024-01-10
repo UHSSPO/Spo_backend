@@ -3,9 +3,14 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { isWeekend } from 'date-fns';
 import OpenApi from '../../common/openApi/openApi';
 import axios from 'axios';
-import IKrxListedInfoRes from '../../common/openApi/interface/openApiInterface';
 import StringUtil from '../../common/util/StringUtil';
 import { ConfigService } from '@nestjs/config';
+import {
+  IFinaStatInfoRes,
+  IIncoStatInfoRes,
+  IKrxListedInfoRes,
+} from '../../common/openApi/interface/openApiInterface';
+import _ from 'lodash';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -14,9 +19,14 @@ export class BatchService implements OnApplicationBootstrap {
   private logger = new Logger(BatchService.name);
 
   private krxListedInfoResData: Array<IKrxListedInfoRes> = [];
+  private finaStatInfoResData: Array<IFinaStatInfoRes> = [];
+  private incoStataInfoResData: Array<IIncoStatInfoRes> = [];
+
+  private krxCrnoArray: string[] = [];
 
   onApplicationBootstrap() {
     this.shouldRunBatch = process.env.NODE_ENV !== 'dev';
+    // this.shouldRunBatch = true;
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_4PM) // 매일 오후 4시에 실행
@@ -35,14 +45,14 @@ export class BatchService implements OnApplicationBootstrap {
             'RESULT_TYPE',
           )}&pageNo=${this.configService.get<string>(
             'PAGE_NO',
-          )}&numOfRow=${this.configService.get<string>(
+          )}&numOfRows=${this.configService.get<string>(
             'GET_KRX_LIST_INFO_ROW',
           )}`,
         );
 
         const items = krxListedInfoRes.data?.response?.body?.items?.item;
 
-        if (items && Array.isArray(items)) {
+        if (StringUtil.isNotEmpty(items) && Array.isArray(items)) {
           this.krxListedInfoResData = items.map((item: any) => ({
             resultCode: item.resultCode,
             resultMsg: item.resultMsg,
@@ -58,32 +68,145 @@ export class BatchService implements OnApplicationBootstrap {
             corpNm: item.corpNm,
           }));
           this.logger.log(
-            'stockBatch task is running',
-            this.krxListedInfoResData,
+            `stockBatch task is running ${basDt}`,
+            `krxListedInfoResData length ${this.krxListedInfoResData.length}`,
           );
           await this.getFinaStatInfo();
         } else {
           this.logger.log('Undefined krxListedInfoRes', krxListedInfoRes.data);
-          await this.getFinaStatInfo();
         }
       } catch (error) {
-        this.logger.error('Error fetching data from API:', error);
+        this.logger.error(
+          'Error fetching data from stockBatchTask API:',
+          error,
+        );
       }
     }
   }
 
+  // 기업 재무제표 api
   async getFinaStatInfo() {
     if (this.shouldRunBatch && !isWeekend(new Date())) {
-      const basDt = StringUtil.getCurrentYear();
-      this.logger.log(basDt);
+      // 공시일자가 3월말에서 4월말 사이라 수동 작업
+      const bizYear = '2022';
+      try {
+        const response = await axios.get(
+          `${
+            OpenApi.GetFinaStatInfoService
+          }?serviceKey=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_KEY',
+          )}&bizYear=${bizYear}&resultType=${this.configService.get<string>(
+            'RESULT_TYPE',
+          )}&pageNo=${this.configService.get<string>(
+            'PAGE_NO',
+          )}&numOfRows=${this.configService.get<string>(
+            'GET_FINA_STAT_INFO_ROW',
+          )}`,
+        );
+        const allFinaStatInfoResponses =
+          response.data?.response?.body?.items?.item;
+
+        if (
+          StringUtil.isNotEmpty(allFinaStatInfoResponses) &&
+          Array.isArray(allFinaStatInfoResponses)
+        ) {
+          // 법인번호 배열 추출
+          this.krxCrnoArray = this.krxListedInfoResData.map(
+            (item: IKrxListedInfoRes) => item.crno,
+          );
+
+          // 재무정보와 상장정보 존재하는 법인 번호로 필터링
+          this.finaStatInfoResData = _.filter(
+            allFinaStatInfoResponses,
+            (item: IFinaStatInfoRes) => this.krxCrnoArray.includes(item.crno),
+          );
+
+          // Set 자료구조 사용해서 중복 제거
+          const finaCrnoArray = Array.from(
+            new Set(
+              this.finaStatInfoResData.map(
+                (item: IFinaStatInfoRes) => item.crno,
+              ),
+            ),
+          );
+          // 재무정보와 상장정보 존재하는 법인 번호로 필터링
+          this.krxListedInfoResData = _.filter(
+            this.krxListedInfoResData,
+            (item: IFinaStatInfoRes) => finaCrnoArray.includes(item.crno),
+          );
+
+          // 상장정보 법인번호 재추출 (krxListedInfoResData 변경)
+          this.krxCrnoArray = this.krxListedInfoResData.map(
+            (item: IKrxListedInfoRes) => item.crno,
+          );
+
+          this.logger.log(
+            `getFinaStatInfo task is running`,
+            `krxListedInfoResData length ${this.krxListedInfoResData.length}`,
+            `finaStatInfoResData length ${this.finaStatInfoResData.length}`,
+          );
+          await this.getIncoStatInfo();
+        } else {
+          this.logger.log(
+            'Undefined FinaStatInfoResponses',
+            allFinaStatInfoResponses,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          'Error fetching data from getFinaStatInfo API:',
+          error,
+        );
+      }
     }
   }
 
-  //TODO: 기업 재무제표 api 호출 예정
-  @Cron('0 0 0 2 1 *') // 매년 1월 2일 24시에 실행
-  handleBatchTask() {
-    if (this.shouldRunBatch) {
-      console.log('Batch task is running at', new Date());
+  async getIncoStatInfo() {
+    if (this.shouldRunBatch && !isWeekend(new Date())) {
+      // 공시일자가 3월말에서 4월말 사이라 수동 작업
+      const bizYear = '2022';
+      try {
+        const response = await axios.get(
+          `${
+            OpenApi.GetIncoStatInfoService
+          }?serviceKey=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_KEY',
+          )}&bizYear=${bizYear}&resultType=${this.configService.get<string>(
+            'RESULT_TYPE',
+          )}&pageNo=${this.configService.get<string>(
+            'PAGE_NO',
+          )}&numOfRows=${this.configService.get<string>(
+            'GET_FINA_STAT_INFO_ROW',
+          )}`,
+        );
+        const allIncoStatInfoResponses =
+          response.data?.response?.body?.items?.item;
+
+        if (
+          StringUtil.isNotEmpty(allIncoStatInfoResponses) &&
+          Array.isArray(allIncoStatInfoResponses)
+        ) {
+          // 재무정보와 상장정보 존재하는 법인 번호로 필터링
+          this.incoStataInfoResData = _.filter(
+            allIncoStatInfoResponses,
+            (item: IIncoStatInfoRes) => this.krxCrnoArray.includes(item.crno),
+          );
+          this.logger.log(
+            'getIncoStatInfo task is running',
+            `incoStataInfoResData length ${this.incoStataInfoResData.length}`,
+          );
+        } else {
+          this.logger.log(
+            'Undefined allIncoStatInfoResponses',
+            allIncoStatInfoResponses,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          'Error fetching data from getIncoStatInfo API:',
+          error,
+        );
+      }
     }
   }
 }

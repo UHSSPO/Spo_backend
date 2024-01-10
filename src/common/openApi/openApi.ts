@@ -5,4 +5,7 @@ export default class OpenApi {
 
   public static readonly GetFinaStatInfoService: string =
     'http://apis.data.go.kr/1160100/service/GetFinaStatInfoService_V2/getSummFinaStat_V2';
+
+  public static readonly GetIncoStatInfoService: string =
+    'http://apis.data.go.kr/1160100/service/GetFinaStatInfoService_V2/getIncoStat_V2';
 }
