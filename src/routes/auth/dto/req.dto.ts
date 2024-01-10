@@ -1,5 +1,5 @@
 import { IsNotEmpty, MaxLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 
 export class KakaoLoginDto {
   @IsNotEmpty()
@@ -69,3 +69,5 @@ export class CreateUserDto {
   })
   nickName: string;
 }
+
+export class LoginDto extends PickType(CreateUserDto, ['email', 'pwd']) {}

@@ -8,11 +8,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto, KakaoLoginDto } from './dto/create-user.dto';
+import { CreateUserDto, KakaoLoginDto, LoginDto } from './dto/req.dto';
 import { KakaoLoginResDto, LoginResDto } from './dto/res.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { SpoUser } from '../../entity/spo_user.entity';
-import LoginDto from './dto/login.dto';
 import { LocalAuthGuard } from '../../auth/local-auth.guard';
 
 @Controller('auth')
