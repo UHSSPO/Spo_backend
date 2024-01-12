@@ -18,4 +18,9 @@ export class BatchController {
   incoBatchTask() {
     return this.batchService.getIncoStatInfo();
   }
+
+  @Get('/stock-price')
+  stockPriceBatchTask() {
+    return this.batchService.getStockPriceInfo();
+  }
 }

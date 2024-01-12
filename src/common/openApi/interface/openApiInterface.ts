@@ -75,3 +75,26 @@ export interface IIncoStatInfoRes {
   itmsNm: string; // 종목명 (유가증권 국제인증 고유번호 코드 이름)
   corpNm: string; // 법인명 (종목의 법인 명칭)
 }
+
+export interface IStockPriceInfoRes {
+  resultCode: string; // API 호출 결과의 상태 코드
+  resultMsg: string; // API 호출 결과의 상태
+  numOfRows: number; // 한 페이지 결과 수
+  pageNo: number; // 페이지 번호
+  totalCount: number; // 전체 결과 수
+  basDt: string; // 기준일자
+  srtnCd: string; // 단축코드
+  isinCd: string; // ISIN코드
+  itmsNm: string; // 종목명
+  mrktCtg: string; // 시장구분
+  clpr: number; // 종가
+  vs: number; // 대비
+  fltRt: number; // 등락률
+  mkp: number; // 시가
+  hipr: number; // 고가
+  lopr: number; // 저가
+  trqu: number; // 거래량
+  trPrc: number; // 거래대금
+  lstgStCnt: number; // 상장주식수
+  mrktTotAmt: number; // 시가총액
+}
