@@ -23,8 +23,10 @@ export class BatchService implements OnApplicationBootstrap {
   private finaStatInfoResData: Array<IFinaStatInfoRes> = [];
   private incoStataInfoResData: Array<IIncoStatInfoRes> = [];
   private stockPriceInfoResData: Array<IStockPriceInfoRes> = [];
+  private stockPriceThreeMonthInfoResData: Array<IStockPriceInfoRes> = [];
 
   private krxCrnoArray: string[] = [];
+  private krxItemsNameArray: string[] = [];
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
@@ -71,8 +73,7 @@ export class BatchService implements OnApplicationBootstrap {
             corpNm: item.corpNm,
           }));
           this.logger.log(
-            `stockBatch task is running ${basDt}`,
-            `krxListedInfoResData length ${this.krxListedInfoResData.length}`,
+            `stockBatch task is running ${basDt} krxListedInfoResData length ${this.krxListedInfoResData.length}`,
           );
           await this.getFinaStatInfo();
         } else {
@@ -80,8 +81,7 @@ export class BatchService implements OnApplicationBootstrap {
         }
       } catch (error) {
         this.logger.error(
-          'Error fetching data from stockBatchTask API:',
-          error,
+          `Error fetching data from stockBatchTask API: ${error}`,
         );
       }
     }
@@ -139,9 +139,7 @@ export class BatchService implements OnApplicationBootstrap {
           );
 
           this.logger.log(
-            `getFinaStatInfo task is running`,
-            `krxListedInfoResData length ${this.krxListedInfoResData.length}`,
-            `finaStatInfoResData length ${this.finaStatInfoResData.length}`,
+            `getFinaStatInfo task is running krxListedInfoResData length ${this.krxListedInfoResData.length} finaStatInfoResData length ${this.finaStatInfoResData.length}`,
           );
           await this.getIncoStatInfo();
         } else {
@@ -149,8 +147,7 @@ export class BatchService implements OnApplicationBootstrap {
         }
       } catch (error) {
         this.logger.error(
-          'Error fetching data from getFinaStatInfo API:',
-          error,
+          `Error fetching data from getFinaStatInfo API: ${error}`,
         );
       }
     }
@@ -184,8 +181,7 @@ export class BatchService implements OnApplicationBootstrap {
             (item: IIncoStatInfoRes) => this.krxCrnoArray.includes(item.crno),
           );
           this.logger.log(
-            'getIncoStatInfo task is running',
-            `incoStataInfoResData length ${this.incoStataInfoResData.length}`,
+            `getIncoStatInfo task is running incoStataInfoResData length ${this.incoStataInfoResData.length}`,
           );
           await this.getStockPriceInfo();
         } else {
@@ -193,8 +189,7 @@ export class BatchService implements OnApplicationBootstrap {
         }
       } catch (error) {
         this.logger.error(
-          'Error fetching data from getIncoStatInfo API:',
-          error,
+          `Error fetching data from getIncoStatInfo API: ${error}`,
         );
       }
     }
@@ -221,20 +216,20 @@ export class BatchService implements OnApplicationBootstrap {
         const items = stockPriceInfoRes.data?.response?.body?.items?.item;
 
         if (StringUtil.isNotEmpty(items) && _.isArray(items)) {
-          const krxItemsNameArray = this.krxListedInfoResData.map(
+          this.krxItemsNameArray = this.krxListedInfoResData.map(
             (item: IKrxListedInfoRes) => item.itmsNm,
           );
 
           this.stockPriceInfoResData = _.filter(
             items,
             (item: IStockPriceInfoRes) =>
-              krxItemsNameArray.includes(item.itmsNm),
+              this.krxItemsNameArray.includes(item.itmsNm),
           );
 
           this.logger.log(
-            'getStockPriceInfo task is running',
-            `stockPriceInfoResData length ${this.stockPriceInfoResData.length}`,
+            `getStockPriceInfo task is running stockPriceInfoResData length ${this.stockPriceInfoResData.length}`,
           );
+          await this.getStockPriceThreeMonthInfo();
         } else {
           this.logger.log(
             'Undefined Response from getStockPriceInfo API',
@@ -243,7 +238,63 @@ export class BatchService implements OnApplicationBootstrap {
         }
       } catch (error) {
         this.logger.error(
-          'Error fetching data from getStockPriceInfo API:',
+          `Error fetching data from getStockPriceInfo API: ${error}`,
+        );
+      }
+    }
+  }
+
+  // 3개월 전 주식 시세 정보
+  async getStockPriceThreeMonthInfo() {
+    if (this.shouldRunBatch) {
+      const basDt = StringUtil.getThreeMonthDate();
+      try {
+        // 3개월 전 주식 시세 정보 호출
+        const stockPriceThreeMonthInfoRes: any = await axios.get(
+          `${
+            OpenApi.GetStockPriceInfoService
+          }?serviceKey=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_KEY',
+          )}&basDt=${basDt}&resultType=${this.configService.get<string>(
+            'RESULT_TYPE',
+          )}&pageNo=${this.configService.get<string>(
+            'PAGE_NO',
+          )}&numOfRows=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_ROW',
+          )}`,
+        );
+        const items =
+          stockPriceThreeMonthInfoRes.data?.response?.body?.items?.item;
+
+        if (StringUtil.isNotEmpty(items) && _.isArray(items)) {
+          this.stockPriceThreeMonthInfoResData = _.filter(
+            items,
+            (item: IStockPriceInfoRes) =>
+              this.krxItemsNameArray.includes(item.itmsNm),
+          );
+
+          const threeMonthInfoResNameArray =
+            this.stockPriceThreeMonthInfoResData.map(
+              (item: IStockPriceInfoRes) => item.itmsNm,
+            );
+
+          this.stockPriceInfoResData = _.filter(
+            this.stockPriceInfoResData,
+            (item: any) => threeMonthInfoResNameArray.includes(item.itmsNm),
+          );
+
+          this.logger.log(
+            `getStockPriceThreeMonthInfo task is running stockPriceThreeMonthInfoResData length ${this.stockPriceThreeMonthInfoResData.length}`,
+          );
+        } else {
+          this.logger.log(
+            'Undefined Response from stockPriceThreeMonthInfoResData API',
+            items,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          'Error fetching data from getStockPriceThrMonInfo API:',
           error,
         );
       }
