@@ -69,9 +69,28 @@ export default class StringUtil {
     return yesterday;
   }
 
+  public static getThreeMonthDate(dateTimeFormat?: string) {
+    let days = 90;
+    let threeMonthDate = DateTime.local()
+      .setLocale('ko')
+      .minus({ days: days })
+      .toFormat(dateTimeFormat || 'yyyyLLdd');
+    while (this.getHoliday(threeMonthDate)) {
+      days += 1;
+      threeMonthDate = DateTime.local()
+        .setLocale('ko')
+        .minus({ days: days })
+        .toFormat(dateTimeFormat || 'yyyyLLdd');
+    }
+
+    return threeMonthDate;
+  }
+
   public static getHoliday(str: string) {
     const holiday = {
       '2023': {
+        '10': ['3', '9', '14', '15'],
+        '11': [],
         '12': ['25', '29', '30', '31'],
       },
       '2024': {
