@@ -32,6 +32,7 @@ import { BatchModule } from './routes/batch/batch.module';
           charset: 'utf8mb4',
           collation: 'utf8mb4_unicode_ci',
           synchronize: false,
+          timezone: 'Z',
           logger: new DatabaseLogger(),
         };
       },

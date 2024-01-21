@@ -12,10 +12,15 @@ import {
   IStockPriceInfoRes,
 } from '../../common/openApi/interface/openApiInterface';
 import _ from 'lodash';
+import { DataSource } from 'typeorm';
+import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private dataSource: DataSource,
+  ) {}
   private shouldRunBatch = true;
   private logger = new Logger(BatchService.name);
 
@@ -102,9 +107,7 @@ export class BatchService implements OnApplicationBootstrap {
             'RESULT_TYPE',
           )}&pageNo=${this.configService.get<string>(
             'PAGE_NO',
-          )}&numOfRows=${this.configService.get<string>(
-            'GET_FINA_STAT_INFO_ROW',
-          )}`,
+          )}&numOfRows=130000`,
         );
         const items = response.data?.response?.body?.items?.item;
 
@@ -115,8 +118,10 @@ export class BatchService implements OnApplicationBootstrap {
           );
 
           // 재무정보와 상장정보 존재하는 법인 번호로 필터링
-          this.finaStatInfoResData = _.filter(items, (item: IFinaStatInfoRes) =>
-            this.krxCrnoArray.includes(item.crno),
+          this.finaStatInfoResData = _.filter(
+            items,
+            (item: IFinaStatInfoRes) =>
+              this.krxCrnoArray.includes(item.crno) && item.fnclDcd === '120',
           );
 
           // Set 자료구조 사용해서 중복 제거
@@ -137,6 +142,37 @@ export class BatchService implements OnApplicationBootstrap {
           this.krxCrnoArray = this.krxListedInfoResData.map(
             (item: IKrxListedInfoRes) => item.crno,
           );
+
+          await this.dataSource.transaction(async (manager) => {
+            for (const krxListedInfoResData of this.krxListedInfoResData) {
+              const stockInfo = new SpoStockInfo();
+              stockInfo.basDt = krxListedInfoResData.basDt;
+              stockInfo.crno = krxListedInfoResData.crno;
+              stockInfo.corpNm = krxListedInfoResData.corpNm;
+              stockInfo.itmsNm = krxListedInfoResData.itmsNm;
+              stockInfo.mrktCtg = krxListedInfoResData.mrktCtg;
+
+              await manager.query(
+                `
+                  INSERT INTO SPO_STK_INFO (BAS_DT, CRNO, CORP_NM, ITMS_NM, MRKT_CTG)
+                  VALUES (?, ?, ?, ?, ?)
+                  ON DUPLICATE KEY UPDATE
+                    BAS_DT = VALUES(BAS_DT),
+                    CRNO = VALUES(CRNO),
+                    CORP_NM = VALUES(CORP_NM),
+                    ITMS_NM = VALUES(ITMS_NM),
+                    MRKT_CTG = VALUES(MRKT_CTG)
+                `,
+                [
+                  stockInfo.basDt,
+                  stockInfo.crno,
+                  stockInfo.corpNm,
+                  stockInfo.itmsNm,
+                  stockInfo.mrktCtg,
+                ],
+              );
+            }
+          });
 
           this.logger.log(
             `getFinaStatInfo task is running krxListedInfoResData length ${this.krxListedInfoResData.length} finaStatInfoResData length ${this.finaStatInfoResData.length}`,
