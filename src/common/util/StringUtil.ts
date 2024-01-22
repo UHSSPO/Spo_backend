@@ -58,7 +58,7 @@ export default class StringUtil {
       .setLocale('ko')
       .minus({ days: days })
       .toFormat(dateTimeFormat || 'yyyyLLdd');
-    while (this.getHoliday(yesterday)) {
+    while (this.getHoliday(yesterday) || this.isWeekend(yesterday)) {
       days += 1;
       yesterday = DateTime.local()
         .setLocale('ko')
@@ -69,13 +69,21 @@ export default class StringUtil {
     return yesterday;
   }
 
+  public static isWeekend(date: string) {
+    const parsedDate = DateTime.fromFormat(date, 'yyyyMMdd');
+    const dayOfWeek = parsedDate.weekday;
+
+    // 1은 월요일, 5는 금요일
+    return dayOfWeek === 6 || dayOfWeek === 7;
+  }
+
   public static getThreeMonthDate(dateTimeFormat?: string) {
     let days = 90;
     let threeMonthDate = DateTime.local()
       .setLocale('ko')
       .minus({ days: days })
       .toFormat(dateTimeFormat || 'yyyyLLdd');
-    while (this.getHoliday(threeMonthDate)) {
+    while (this.getHoliday(threeMonthDate) || this.isWeekend(threeMonthDate)) {
       days += 1;
       threeMonthDate = DateTime.local()
         .setLocale('ko')

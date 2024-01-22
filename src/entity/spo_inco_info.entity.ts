@@ -33,7 +33,7 @@ export class SpoIncoInfo {
 
   @Column({ name: 'FNCL_DCD' })
   @ApiProperty({ description: '재무재표구분코드', example: '110' })
-  fnclDCD: string;
+  fnclDcd: string;
 
   @Column({ name: 'FNCL_DCD_NM' })
   @ApiProperty({
@@ -47,7 +47,7 @@ export class SpoIncoInfo {
     description: '계정과목ID',
     example: 'dart_OperatingIncomeLoss',
   })
-  actiId: string;
+  acitId: string;
 
   @Column({ name: 'ACIT_NM' })
   @ApiProperty({
@@ -56,23 +56,23 @@ export class SpoIncoInfo {
   })
   acitNm: string;
 
-  @Column({ name: 'THQR_ACIT_AMT' })
+  @Column({ name: 'THQR_ACIT_AMT', type: 'bigint' })
   @ApiProperty({ description: '당분기계정과목금액', example: 10000000 })
   thqrAcitAmt: number;
 
-  @Column({ name: 'CRTM_ACIT_AMT' })
+  @Column({ name: 'CRTM_ACIT_AMT', type: 'bigint' })
   @ApiProperty({ description: '당기계정과목금액', example: 12000000 })
   crtmAcitAmt: number;
 
-  @Column({ name: 'ISQT_ACIT_AMT' })
+  @Column({ name: 'ISQT_ACIT_AMT', type: 'bigint' })
   @ApiProperty({ description: '전분기계정과목금액', example: 11000000 })
-  isqtAcitAmt: number;
+  lsqtAcitAmt: number;
 
-  @Column({ name: 'PVTR_ACIT_AMT' })
+  @Column({ name: 'PVTR_ACIT_AMT', type: 'bigint' })
   @ApiProperty({ description: '전기계정과목금액', example: 12000000 })
   pvtrAcitAmt: number;
 
-  @Column({ name: 'BPVTR_ACIT_AMT' })
+  @Column({ name: 'BPVTR_ACIT_AMT', type: 'bigint' })
   @ApiProperty({ description: '전전기계정과목금액', example: 12000000 })
   bpvtrAcitAmt: number;
 

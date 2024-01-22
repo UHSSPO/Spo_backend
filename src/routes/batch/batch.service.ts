@@ -14,6 +14,8 @@ import {
 import _ from 'lodash';
 import { DataSource } from 'typeorm';
 import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
+import { SpoSummFinaInfo } from '../../entity/spo_summ_fina_info.entity';
+import { SpoIncoInfo } from '../../entity/spo_inco_info.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -30,7 +32,6 @@ export class BatchService implements OnApplicationBootstrap {
   private stockPriceInfoResData: Array<IStockPriceInfoRes> = [];
   private stockPriceThreeMonthInfoResData: Array<IStockPriceInfoRes> = [];
 
-  private krxCrnoArray: string[] = [];
   private krxItemsNameArray: string[] = [];
 
   onApplicationBootstrap() {
@@ -60,29 +61,37 @@ export class BatchService implements OnApplicationBootstrap {
           )}`,
         );
 
-        const items = krxListedInfoRes.data?.response?.body?.items?.item;
+        this.krxListedInfoResData =
+          krxListedInfoRes.data?.response?.body?.items?.item;
 
-        if (StringUtil.isNotEmpty(items) && Array.isArray(items)) {
-          this.krxListedInfoResData = items.map((item: any) => ({
-            resultCode: item.resultCode,
-            resultMsg: item.resultMsg,
-            numOfRows: item.numOfRows,
-            pageNo: item.pageNo,
-            totalCount: item.totalCount,
-            basDt: item.basDt,
-            srtnCd: item.srtnCd,
-            isinCd: item.isinCd,
-            mrktCtg: item.mrktCtg,
-            itmsNm: item.itmsNm,
-            crno: item.crno,
-            corpNm: item.corpNm,
-          }));
-          this.logger.log(
-            `stockBatch task is running ${basDt} krxListedInfoResData length ${this.krxListedInfoResData.length}`,
-          );
-          await this.getFinaStatInfo();
+        if (
+          StringUtil.isNotEmpty(this.krxListedInfoResData) &&
+          _.isArray(this.krxListedInfoResData)
+        ) {
+          await this.dataSource.transaction(async (manager) => {
+            const finaInfos = await manager.find(SpoSummFinaInfo);
+            for (const finaInfo of finaInfos) {
+              const matchingKrxListedInfo = this.krxListedInfoResData.find(
+                (item) => item.crno === finaInfo.crno,
+              );
+              if (matchingKrxListedInfo) {
+                const stockInfo = new SpoStockInfo();
+                stockInfo.basDt = matchingKrxListedInfo.basDt;
+                stockInfo.crno = matchingKrxListedInfo.crno;
+                stockInfo.corpNm = matchingKrxListedInfo.corpNm;
+                stockInfo.itmsNm = matchingKrxListedInfo.itmsNm;
+                stockInfo.mrktCtg = matchingKrxListedInfo.mrktCtg;
+
+                await manager.upsert(SpoStockInfo, stockInfo, ['crno']);
+              }
+            }
+            this.logger.log('Success SpoStockInfo Update');
+          });
         } else {
-          this.logger.log('Undefined krxListedInfoRes', krxListedInfoRes.data);
+          this.logger.log(
+            'Undefined Response from getFinaStatInfo API',
+            this.krxListedInfoResData,
+          );
         }
       } catch (error) {
         this.logger.error(
@@ -109,77 +118,49 @@ export class BatchService implements OnApplicationBootstrap {
             'PAGE_NO',
           )}&numOfRows=130000`,
         );
-        const items = response.data?.response?.body?.items?.item;
+        this.finaStatInfoResData = response.data?.response?.body?.items?.item;
 
-        if (StringUtil.isNotEmpty(items) && Array.isArray(items)) {
-          // 법인번호 배열 추출
-          this.krxCrnoArray = this.krxListedInfoResData.map(
-            (item: IKrxListedInfoRes) => item.crno,
-          );
-
-          // 재무정보와 상장정보 존재하는 법인 번호로 필터링
-          this.finaStatInfoResData = _.filter(
-            items,
-            (item: IFinaStatInfoRes) =>
-              this.krxCrnoArray.includes(item.crno) && item.fnclDcd === '120',
-          );
-
-          // Set 자료구조 사용해서 중복 제거
-          const finaCrnoArray = Array.from(
-            new Set(
-              this.finaStatInfoResData.map(
-                (item: IFinaStatInfoRes) => item.crno,
-              ),
-            ),
-          );
-          // 재무정보와 상장정보 존재하는 법인 번호로 필터링
-          this.krxListedInfoResData = _.filter(
-            this.krxListedInfoResData,
-            (item: IFinaStatInfoRes) => finaCrnoArray.includes(item.crno),
-          );
-
-          // 상장정보 법인번호 재추출 (krxListedInfoResData 변경)
-          this.krxCrnoArray = this.krxListedInfoResData.map(
-            (item: IKrxListedInfoRes) => item.crno,
-          );
-
+        if (
+          StringUtil.isNotEmpty(this.finaStatInfoResData) &&
+          _.isArray(this.finaStatInfoResData)
+        ) {
           await this.dataSource.transaction(async (manager) => {
-            for (const krxListedInfoResData of this.krxListedInfoResData) {
-              const stockInfo = new SpoStockInfo();
-              stockInfo.basDt = krxListedInfoResData.basDt;
-              stockInfo.crno = krxListedInfoResData.crno;
-              stockInfo.corpNm = krxListedInfoResData.corpNm;
-              stockInfo.itmsNm = krxListedInfoResData.itmsNm;
-              stockInfo.mrktCtg = krxListedInfoResData.mrktCtg;
-
-              await manager.query(
-                `
-                  INSERT INTO SPO_STK_INFO (BAS_DT, CRNO, CORP_NM, ITMS_NM, MRKT_CTG)
-                  VALUES (?, ?, ?, ?, ?)
-                  ON DUPLICATE KEY UPDATE
-                    BAS_DT = VALUES(BAS_DT),
-                    CRNO = VALUES(CRNO),
-                    CORP_NM = VALUES(CORP_NM),
-                    ITMS_NM = VALUES(ITMS_NM),
-                    MRKT_CTG = VALUES(MRKT_CTG)
-                `,
-                [
-                  stockInfo.basDt,
-                  stockInfo.crno,
-                  stockInfo.corpNm,
-                  stockInfo.itmsNm,
-                  stockInfo.mrktCtg,
-                ],
+            const stockInfos = await manager.find(SpoStockInfo);
+            for (const stockInfo of stockInfos) {
+              const matchingFinaInfo = this.finaStatInfoResData.find(
+                (finaStatInfo) =>
+                  finaStatInfo.crno === stockInfo.crno &&
+                  finaStatInfo.fnclDcd === '120',
               );
+
+              if (matchingFinaInfo) {
+                const finaInfo = new SpoSummFinaInfo();
+                finaInfo.stockInfo = stockInfo;
+                finaInfo.stockInfoSequence = stockInfo.stockInfoSequence;
+                finaInfo.crno = matchingFinaInfo.crno;
+                finaInfo.bizYear = matchingFinaInfo.bizYear;
+                finaInfo.curCd = matchingFinaInfo.curCd;
+                finaInfo.fnclDcd = matchingFinaInfo.fnclDcd;
+                finaInfo.fnclDcdNm = matchingFinaInfo.fnclDcdNm;
+                finaInfo.enpSaleAmt = matchingFinaInfo.enpSaleAmt as number;
+                finaInfo.enpBzopPft = matchingFinaInfo.enpBzopPft as number;
+                finaInfo.iclsPalClcAmt =
+                  matchingFinaInfo.iclsPalClcAmt as number;
+                finaInfo.enpCrtmNpf = matchingFinaInfo.enpCrtmNpf as number;
+                finaInfo.enpTastAmt = matchingFinaInfo.enpTastAmt as number;
+                finaInfo.enpTdbtAmt = matchingFinaInfo.enpTdbtAmt as number;
+                finaInfo.enpTcptAmt = matchingFinaInfo.enpTcptAmt as number;
+                finaInfo.enpCptlAmt = matchingFinaInfo.enpCptlAmt as number;
+                finaInfo.fnclDebtRto = matchingFinaInfo.fnclDebtRto as number;
+
+                await manager.upsert(SpoSummFinaInfo, finaInfo, ['crno']);
+              }
             }
           });
-
-          this.logger.log(
-            `getFinaStatInfo task is running krxListedInfoResData length ${this.krxListedInfoResData.length} finaStatInfoResData length ${this.finaStatInfoResData.length}`,
-          );
-          await this.getIncoStatInfo();
+          this.logger.log(`Success SpoSummFinaInfo Update`);
+          // await this.getIncoStatInfo();
         } else {
-          this.logger.log('Undefined Response from getFinaStatInfo API', items);
+          this.logger.log('Undefined Response from getFinaStatInfo API');
         }
       } catch (error) {
         this.logger.error(
@@ -192,7 +173,6 @@ export class BatchService implements OnApplicationBootstrap {
   // 손익계산서
   async getIncoStatInfo() {
     if (this.shouldRunBatch) {
-      // 공시일자가 3월말에서 4월말 사이라 수동 작업
       const bizYear = '2022';
       try {
         const response = await axios.get(
@@ -208,20 +188,50 @@ export class BatchService implements OnApplicationBootstrap {
             'GET_FINA_STAT_INFO_ROW',
           )}`,
         );
-        const items = response.data?.response?.body?.items?.item;
+        this.incoStataInfoResData = response.data?.response?.body?.items?.item;
 
-        if (StringUtil.isNotEmpty(items) && Array.isArray(items)) {
-          // 재무정보와 상장정보 존재하는 법인 번호로 필터링
-          this.incoStataInfoResData = _.filter(
-            items,
-            (item: IIncoStatInfoRes) => this.krxCrnoArray.includes(item.crno),
-          );
-          this.logger.log(
-            `getIncoStatInfo task is running incoStataInfoResData length ${this.incoStataInfoResData.length}`,
-          );
+        if (
+          StringUtil.isNotEmpty(this.incoStataInfoResData) &&
+          _.isArray(this.incoStataInfoResData)
+        ) {
+          await this.dataSource.transaction(async (manager) => {
+            const stockInfos = await manager.find(SpoStockInfo);
+
+            for (const stockInfo of stockInfos) {
+              const matchingIncoInfos = this.incoStataInfoResData.filter(
+                (incoStatInfo) =>
+                  incoStatInfo.crno === stockInfo.crno &&
+                  incoStatInfo.fnclDcd !== 'PL_ifrs-full_ConsolidatedMember',
+              );
+
+              for (const matchingIncoInfo of matchingIncoInfos) {
+                const incoInfo = new SpoIncoInfo();
+                incoInfo.stockInfo = stockInfo;
+                incoInfo.stockInfoSequence = stockInfo.stockInfoSequence;
+                incoInfo.crno = matchingIncoInfo.crno;
+                incoInfo.bizYear = matchingIncoInfo.bizYear;
+                incoInfo.curCD = matchingIncoInfo.curCd;
+                incoInfo.fnclDcd = matchingIncoInfo.fnclDcd;
+                incoInfo.fnclDcdNm = matchingIncoInfo.fnclDcdNm;
+                incoInfo.acitId = matchingIncoInfo.acitId;
+                incoInfo.acitNm = matchingIncoInfo.acitNm;
+                incoInfo.thqrAcitAmt = matchingIncoInfo.thqrAcitAmt;
+                incoInfo.crtmAcitAmt = matchingIncoInfo.crtmAcitAmt;
+                incoInfo.lsqtAcitAmt = matchingIncoInfo.lsqtAcitAmt;
+                incoInfo.pvtrAcitAmt = matchingIncoInfo.pvtrAcitAmt;
+                incoInfo.bpvtrAcitAmt = matchingIncoInfo.bpvtrAcitAmt;
+
+                await manager.save(SpoIncoInfo, incoInfo);
+              }
+            }
+          });
+          this.logger.log(`Success SpoIncoInfo Update`);
           await this.getStockPriceInfo();
         } else {
-          this.logger.log('Undefined Response from getIncoStatInfo API', items);
+          this.logger.log(
+            'Undefined Response from getIncoStatInfo API',
+            this.incoStataInfoResData,
+          );
         }
       } catch (error) {
         this.logger.error(
@@ -230,6 +240,7 @@ export class BatchService implements OnApplicationBootstrap {
       }
     }
   }
+
   // 주식 시세 정보
   async getStockPriceInfo() {
     if (this.shouldRunBatch) {

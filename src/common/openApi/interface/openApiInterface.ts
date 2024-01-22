@@ -22,7 +22,7 @@ export interface IFinaStatInfoRes {
   basDt: string; // 기준 일자 (YYYYMMDD 조회의 기준일, 통상 거래일)
   crno: string; // 법인 등록 번호 (종목의 법인 등록 번호)
   curCd?: string; // 통화 코드
-  bizYear: number; // 사업 연도 (법인에 대해 법령이 규정한 1회계기간으로서 법인세의 과세기간)
+  bizYear: string; // 사업 연도 (법인에 대해 법령이 규정한 1회계기간으로서 법인세의 과세기간)
   fnclDcd: string; // 재무제표 구분 코드 (기업이 회계 연도가 끝나는 때에 결산 보고를 하기 위하여 작성하는 회계 보고서를 구분하는 코드)
   fnclDcdNm?: string; // 재무제표 구분 코드명
   enpSaleAmt: number; // 기업 매출 금액
@@ -50,7 +50,7 @@ export interface IIncoStatInfoRes {
   basDt: string; // 기준 일자 (YYYYMMDD 조회의 기준일, 통상 거래일)
   crno: string; // 법인 등록 번호 (종목의 법인 등록 번호)
   curCd?: string; // 통화 코드
-  bizYear: number; // 사업 연도 (법인에 대해 법령이 규정한 1회계기간으로서 법인세의 과세기간)
+  bizYear: string; // 사업 연도 (법인에 대해 법령이 규정한 1회계기간으로서 법인세의 과세기간)
   fnclDcd: string; // 재무제표 구분 코드 (기업이 회계 연도가 끝나는 때에 결산 보고를 하기 위하여 작성하는 회계 보고서를 구분하는 코드)
   fnclDcdNm?: string; // 재무제표 구분 코드명
   acitId: string; // 계정과목ID
