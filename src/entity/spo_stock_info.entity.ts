@@ -9,8 +9,8 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { SpoSummFinaInfo } from './spo_summ_fina_info.entity';
 import { SpoIncoInfo } from './spo_inco_info.entity';
-import { SpoStkPrcInfo } from './spo_stk_prc_info.entity';
-import { SpoStkPricThrMonInfo } from './spo_stk_pric_thr_mon_info.entity';
+import { SpoStockPriceInfo } from './spo_stock_price_info.entity';
+import { SpoStockPriceThrMonInfo } from './spo_stock_price_thr_mon_info.entity';
 
 @Entity({ name: 'SPO_STK_INFO' })
 @Index('idx_crno', ['crno'], { unique: true })
@@ -26,6 +26,10 @@ export class SpoStockInfo {
   @Column({ name: 'CRNO' })
   @ApiProperty({ description: '법인등록번호', example: '1101110043870' })
   crno: string;
+
+  @Column({ name: 'SRTN_CD' })
+  @ApiProperty({ description: '단축코드', example: 'A00123' })
+  srtnCd: string;
 
   @Column({ name: 'CORP_NM' })
   @ApiProperty({ description: '법인명', example: '삼성전자' })
@@ -53,12 +57,12 @@ export class SpoStockInfo {
   @OneToMany(() => SpoIncoInfo, (incoInfo) => incoInfo.stockInfo)
   incoInfo: SpoIncoInfo[];
 
-  @OneToMany(() => SpoStkPrcInfo, (prcInfo) => prcInfo.stockInfo)
-  prcInfo: SpoStkPrcInfo[];
+  @OneToMany(() => SpoStockPriceInfo, (prcInfo) => prcInfo.stockInfo)
+  prcInfo: SpoStockPriceInfo[];
 
   @OneToMany(
-    () => SpoStkPricThrMonInfo,
+    () => SpoStockPriceThrMonInfo,
     (prcThrMonInfo) => prcThrMonInfo.stockInfo,
   )
-  prcThrMonInfo: SpoStkPrcInfo[];
+  prcThrMonInfo: SpoStockPriceInfo[];
 }

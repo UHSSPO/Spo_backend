@@ -16,6 +16,8 @@ import { DataSource } from 'typeorm';
 import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoSummFinaInfo } from '../../entity/spo_summ_fina_info.entity';
 import { SpoIncoInfo } from '../../entity/spo_inco_info.entity';
+import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
+import { SpoStockPriceThrMonInfo } from '../../entity/spo_stock_price_thr_mon_info.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -41,7 +43,7 @@ export class BatchService implements OnApplicationBootstrap {
   }
 
   // 상장종목정보
-  @Cron(CronExpression.EVERY_DAY_AT_4PM) // 매일 오후 4시에 실행
+  @Cron('0 0 16 5 * *') // 매달 5일 오후 4시에 실행
   async stockBatchTask() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.getYesterdayDate();
@@ -78,6 +80,7 @@ export class BatchService implements OnApplicationBootstrap {
                 const stockInfo = new SpoStockInfo();
                 stockInfo.basDt = matchingKrxListedInfo.basDt;
                 stockInfo.crno = matchingKrxListedInfo.crno;
+                stockInfo.srtnCd = matchingKrxListedInfo.srtnCd;
                 stockInfo.corpNm = matchingKrxListedInfo.corpNm;
                 stockInfo.itmsNm = matchingKrxListedInfo.itmsNm;
                 stockInfo.mrktCtg = matchingKrxListedInfo.mrktCtg;
@@ -142,23 +145,21 @@ export class BatchService implements OnApplicationBootstrap {
                 finaInfo.curCd = matchingFinaInfo.curCd;
                 finaInfo.fnclDcd = matchingFinaInfo.fnclDcd;
                 finaInfo.fnclDcdNm = matchingFinaInfo.fnclDcdNm;
-                finaInfo.enpSaleAmt = matchingFinaInfo.enpSaleAmt as number;
-                finaInfo.enpBzopPft = matchingFinaInfo.enpBzopPft as number;
-                finaInfo.iclsPalClcAmt =
-                  matchingFinaInfo.iclsPalClcAmt as number;
-                finaInfo.enpCrtmNpf = matchingFinaInfo.enpCrtmNpf as number;
-                finaInfo.enpTastAmt = matchingFinaInfo.enpTastAmt as number;
-                finaInfo.enpTdbtAmt = matchingFinaInfo.enpTdbtAmt as number;
-                finaInfo.enpTcptAmt = matchingFinaInfo.enpTcptAmt as number;
-                finaInfo.enpCptlAmt = matchingFinaInfo.enpCptlAmt as number;
-                finaInfo.fnclDebtRto = matchingFinaInfo.fnclDebtRto as number;
+                finaInfo.enpSaleAmt = matchingFinaInfo.enpSaleAmt;
+                finaInfo.enpBzopPft = matchingFinaInfo.enpBzopPft;
+                finaInfo.iclsPalClcAmt = matchingFinaInfo.iclsPalClcAmt;
+                finaInfo.enpCrtmNpf = matchingFinaInfo.enpCrtmNpf;
+                finaInfo.enpTastAmt = matchingFinaInfo.enpTastAmt;
+                finaInfo.enpTdbtAmt = matchingFinaInfo.enpTdbtAmt;
+                finaInfo.enpTcptAmt = matchingFinaInfo.enpTcptAmt;
+                finaInfo.enpCptlAmt = matchingFinaInfo.enpCptlAmt;
+                finaInfo.fnclDebtRto = matchingFinaInfo.fnclDebtRto;
 
                 await manager.upsert(SpoSummFinaInfo, finaInfo, ['crno']);
               }
             }
           });
           this.logger.log(`Success SpoSummFinaInfo Update`);
-          // await this.getIncoStatInfo();
         } else {
           this.logger.log('Undefined Response from getFinaStatInfo API');
         }
@@ -242,6 +243,7 @@ export class BatchService implements OnApplicationBootstrap {
   }
 
   // 주식 시세 정보
+  @Cron(CronExpression.EVERY_DAY_AT_4PM) // 매일 4시에 실행
   async getStockPriceInfo() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.getYesterdayDate();
@@ -260,27 +262,49 @@ export class BatchService implements OnApplicationBootstrap {
             'GET_KRX_LIST_INFO_ROW',
           )}`,
         );
-        const items = stockPriceInfoRes.data?.response?.body?.items?.item;
+        this.stockPriceInfoResData =
+          stockPriceInfoRes.data?.response?.body?.items?.item;
 
-        if (StringUtil.isNotEmpty(items) && _.isArray(items)) {
-          this.krxItemsNameArray = this.krxListedInfoResData.map(
-            (item: IKrxListedInfoRes) => item.itmsNm,
-          );
+        if (
+          StringUtil.isNotEmpty(this.stockPriceInfoResData) &&
+          _.isArray(this.stockPriceInfoResData)
+        ) {
+          await this.dataSource.transaction(async (manager) => {
+            const stockInfos = await manager.find(SpoStockInfo);
+            for (const stockInfo of stockInfos) {
+              const matchingStockPriceInfo = this.stockPriceInfoResData.find(
+                (stockPriceInfo) =>
+                  'A' + stockPriceInfo.srtnCd === stockInfo.srtnCd,
+              );
 
-          this.stockPriceInfoResData = _.filter(
-            items,
-            (item: IStockPriceInfoRes) =>
-              this.krxItemsNameArray.includes(item.itmsNm),
-          );
+              if (matchingStockPriceInfo) {
+                const stockPriceInfo = new SpoStockPriceInfo();
+                stockPriceInfo.stockInfo = stockInfo;
+                stockPriceInfo.stockInfoSequence = stockInfo.stockInfoSequence;
+                stockPriceInfo.srtnCd = matchingStockPriceInfo.srtnCd;
+                stockPriceInfo.itmsNm = matchingStockPriceInfo.itmsNm;
+                stockPriceInfo.clpr = matchingStockPriceInfo.clpr;
+                stockPriceInfo.fltRt = matchingStockPriceInfo.fltRt;
+                stockPriceInfo.mkp = matchingStockPriceInfo.mkp;
+                stockPriceInfo.hipr = matchingStockPriceInfo.hipr;
+                stockPriceInfo.lopr = matchingStockPriceInfo.lopr;
+                stockPriceInfo.trqu = matchingStockPriceInfo.trqu;
+                stockPriceInfo.trPrc = matchingStockPriceInfo.trPrc;
+                stockPriceInfo.lstgStCnt = matchingStockPriceInfo.lstgStCnt;
+                stockPriceInfo.mrktTotAmt = matchingStockPriceInfo.mrktTotAmt;
 
-          this.logger.log(
-            `getStockPriceInfo task is running stockPriceInfoResData length ${this.stockPriceInfoResData.length}`,
-          );
+                await manager.upsert(SpoStockPriceInfo, stockPriceInfo, [
+                  'srtnCd',
+                ]);
+              }
+            }
+          });
+          this.logger.log(`Success SpoStockPriceInfo Update ${basDt}`);
           await this.getStockPriceThreeMonthInfo();
         } else {
           this.logger.log(
             'Undefined Response from getStockPriceInfo API',
-            items,
+            this.stockPriceInfoResData,
           );
         }
       } catch (error) {
@@ -310,33 +334,63 @@ export class BatchService implements OnApplicationBootstrap {
             'GET_KRX_LIST_INFO_ROW',
           )}`,
         );
-        const items =
+        this.stockPriceThreeMonthInfoResData =
           stockPriceThreeMonthInfoRes.data?.response?.body?.items?.item;
 
-        if (StringUtil.isNotEmpty(items) && _.isArray(items)) {
-          this.stockPriceThreeMonthInfoResData = _.filter(
-            items,
-            (item: IStockPriceInfoRes) =>
-              this.krxItemsNameArray.includes(item.itmsNm),
-          );
+        if (
+          StringUtil.isNotEmpty(this.stockPriceThreeMonthInfoResData) &&
+          _.isArray(this.stockPriceThreeMonthInfoResData)
+        ) {
+          await this.dataSource.transaction(async (manager) => {
+            const stockInfos = await manager.find(SpoStockInfo);
+            for (const stockInfo of stockInfos) {
+              const matchingStockPriceThreeMonthInfo =
+                this.stockPriceThreeMonthInfoResData.find(
+                  (stockPriceThreeMonthInfo) =>
+                    'A' + stockPriceThreeMonthInfo.srtnCd === stockInfo.srtnCd,
+                );
+              if (matchingStockPriceThreeMonthInfo) {
+                const stockPriceThreeMonthInfo = new SpoStockPriceThrMonInfo();
+                stockPriceThreeMonthInfo.stockInfo = stockInfo;
+                stockPriceThreeMonthInfo.stockInfoSequence =
+                  stockInfo.stockInfoSequence;
+                stockPriceThreeMonthInfo.srtnCd =
+                  matchingStockPriceThreeMonthInfo.srtnCd;
+                stockPriceThreeMonthInfo.itmsNm =
+                  matchingStockPriceThreeMonthInfo.itmsNm;
+                stockPriceThreeMonthInfo.clpr =
+                  matchingStockPriceThreeMonthInfo.clpr;
+                stockPriceThreeMonthInfo.fltRt =
+                  matchingStockPriceThreeMonthInfo.fltRt;
+                stockPriceThreeMonthInfo.mkp =
+                  matchingStockPriceThreeMonthInfo.mkp;
+                stockPriceThreeMonthInfo.hipr =
+                  matchingStockPriceThreeMonthInfo.hipr;
+                stockPriceThreeMonthInfo.lopr =
+                  matchingStockPriceThreeMonthInfo.lopr;
+                stockPriceThreeMonthInfo.trqu =
+                  matchingStockPriceThreeMonthInfo.trqu;
+                stockPriceThreeMonthInfo.trPrc =
+                  matchingStockPriceThreeMonthInfo.trPrc;
+                stockPriceThreeMonthInfo.lstgStCnt =
+                  matchingStockPriceThreeMonthInfo.lstgStCnt;
+                stockPriceThreeMonthInfo.mrktTotAmt =
+                  matchingStockPriceThreeMonthInfo.mrktTotAmt;
 
-          const threeMonthInfoResNameArray =
-            this.stockPriceThreeMonthInfoResData.map(
-              (item: IStockPriceInfoRes) => item.itmsNm,
-            );
+                await manager.upsert(
+                  SpoStockPriceThrMonInfo,
+                  stockPriceThreeMonthInfo,
+                  ['srtnCd'],
+                );
+              }
+            }
+          });
 
-          this.stockPriceInfoResData = _.filter(
-            this.stockPriceInfoResData,
-            (item: any) => threeMonthInfoResNameArray.includes(item.itmsNm),
-          );
-
-          this.logger.log(
-            `getStockPriceThreeMonthInfo task is running stockPriceThreeMonthInfoResData length ${this.stockPriceThreeMonthInfoResData.length}`,
-          );
+          this.logger.log(`Success SpoStockPriceThrMonInfo Update ${basDt}`);
         } else {
           this.logger.log(
             'Undefined Response from stockPriceThreeMonthInfoResData API',
-            items,
+            this.stockPriceThreeMonthInfoResData,
           );
         }
       } catch (error) {
