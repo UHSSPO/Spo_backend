@@ -14,4 +14,12 @@ export default class OpenApi {
   // 주식 시세 정보
   public static readonly GetStockPriceInfoService: string =
     'https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo';
+
+  // 주가 지수 시세
+  public static readonly GetStockMarketIndexService: string =
+    'https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService/getStockMarketIndex';
+
+  // 파상생품 지수 시세
+  public static readonly GetDerivationMarketIndexService: string =
+    'https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService/getDerivationProductMarketIndex';
 }

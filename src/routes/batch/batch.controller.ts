@@ -1,6 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { BatchService } from './batch.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Batch')
 @Controller('batch')
 export class BatchController {
   constructor(private batchService: BatchService) {}
@@ -27,5 +29,10 @@ export class BatchController {
   @Get('/stock-price/three-month')
   stockPriceThrMonTask() {
     return this.batchService.getStockPriceThreeMonthInfo();
+  }
+
+  @Get('/market-index')
+  marketIndexBatchTask() {
+    return this.batchService.getMarketIndexInfo();
   }
 }

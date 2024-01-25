@@ -9,6 +9,7 @@ import {
   IFinaStatInfoRes,
   IIncoStatInfoRes,
   IKrxListedInfoRes,
+  IMarketIndexInfoRes,
   IStockPriceInfoRes,
 } from '../../common/openApi/interface/openApiInterface';
 import _ from 'lodash';
@@ -18,6 +19,7 @@ import { SpoSummFinaInfo } from '../../entity/spo_summ_fina_info.entity';
 import { SpoIncoInfo } from '../../entity/spo_inco_info.entity';
 import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
 import { SpoStockPriceThrMonInfo } from '../../entity/spo_stock_price_thr_mon_info.entity';
+import { SpoMarketIndex } from '../../entity/spo_market_index.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -33,8 +35,8 @@ export class BatchService implements OnApplicationBootstrap {
   private incoStataInfoResData: Array<IIncoStatInfoRes> = [];
   private stockPriceInfoResData: Array<IStockPriceInfoRes> = [];
   private stockPriceThreeMonthInfoResData: Array<IStockPriceInfoRes> = [];
-
-  private krxItemsNameArray: string[] = [];
+  private stockMarketIndexInfoResData: Array<IMarketIndexInfoRes> = [];
+  private derivationMarketIndexInfoResData: Array<IMarketIndexInfoRes> = [];
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
@@ -285,6 +287,7 @@ export class BatchService implements OnApplicationBootstrap {
                 stockPriceInfo.itmsNm = matchingStockPriceInfo.itmsNm;
                 stockPriceInfo.clpr = matchingStockPriceInfo.clpr;
                 stockPriceInfo.fltRt = matchingStockPriceInfo.fltRt;
+                stockPriceInfo.vs = matchingStockPriceInfo.vs;
                 stockPriceInfo.mkp = matchingStockPriceInfo.mkp;
                 stockPriceInfo.hipr = matchingStockPriceInfo.hipr;
                 stockPriceInfo.lopr = matchingStockPriceInfo.lopr;
@@ -362,6 +365,8 @@ export class BatchService implements OnApplicationBootstrap {
                   matchingStockPriceThreeMonthInfo.clpr;
                 stockPriceThreeMonthInfo.fltRt =
                   matchingStockPriceThreeMonthInfo.fltRt;
+                stockPriceThreeMonthInfo.vs =
+                  matchingStockPriceThreeMonthInfo.vs;
                 stockPriceThreeMonthInfo.mkp =
                   matchingStockPriceThreeMonthInfo.mkp;
                 stockPriceThreeMonthInfo.hipr =
@@ -387,6 +392,7 @@ export class BatchService implements OnApplicationBootstrap {
           });
 
           this.logger.log(`Success SpoStockPriceThrMonInfo Update ${basDt}`);
+          await this.getMarketIndexInfo();
         } else {
           this.logger.log(
             'Undefined Response from stockPriceThreeMonthInfoResData API',
@@ -397,6 +403,94 @@ export class BatchService implements OnApplicationBootstrap {
         this.logger.error(
           'Error fetching data from getStockPriceThrMonInfo API:',
           error,
+        );
+      }
+    }
+  }
+
+  async getMarketIndexInfo() {
+    if (this.shouldRunBatch) {
+      const basDt = StringUtil.getYesterdayDate();
+      try {
+        const stockMarketIndexInfoRes = await axios.get(
+          `${
+            OpenApi.GetStockMarketIndexService
+          }?serviceKey=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_KEY',
+          )}&basDt=${basDt}&resultType=${this.configService.get<string>(
+            'RESULT_TYPE',
+          )}&pageNo=${this.configService.get<string>(
+            'PAGE_NO',
+          )}&numOfRows=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_ROW',
+          )}`,
+        );
+        this.stockMarketIndexInfoResData =
+          stockMarketIndexInfoRes.data?.response?.body?.items?.item;
+
+        const derivationMarketIndexInfoRes = await axios.get(
+          `${
+            OpenApi.GetDerivationMarketIndexService
+          }?serviceKey=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_KEY',
+          )}&basDt=${basDt}&resultType=${this.configService.get<string>(
+            'RESULT_TYPE',
+          )}&pageNo=${this.configService.get<string>(
+            'PAGE_NO',
+          )}&numOfRows=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_ROW',
+          )}`,
+        );
+
+        this.derivationMarketIndexInfoResData =
+          derivationMarketIndexInfoRes.data?.response?.body?.items?.item;
+
+        const combinedMarketIndexInfos: Array<IMarketIndexInfoRes> =
+          this.stockMarketIndexInfoResData.concat(
+            this.derivationMarketIndexInfoResData,
+          );
+
+        if (
+          StringUtil.isNotEmpty(combinedMarketIndexInfos) &&
+          _.isArray(combinedMarketIndexInfos)
+        ) {
+          await this.dataSource.transaction(async (manager) => {
+            for (const combinedMarketIndexInfo of combinedMarketIndexInfos) {
+              const IdxNameArray: string[] = [
+                '코스피',
+                '코스닥',
+                '코스닥 150',
+                '코스피 200',
+                '코스피 100',
+                'KRX 300',
+                '국채선물지수',
+                'KRX 금현물지수',
+              ];
+
+              if (IdxNameArray.includes(combinedMarketIndexInfo.idxNm)) {
+                const marketIndexInfo = new SpoMarketIndex();
+
+                marketIndexInfo.vs = combinedMarketIndexInfo.vs;
+                marketIndexInfo.clpr = combinedMarketIndexInfo.clpr;
+                marketIndexInfo.fltRt = combinedMarketIndexInfo.fltRt;
+                marketIndexInfo.idxNm = combinedMarketIndexInfo.idxNm;
+
+                await manager.upsert(SpoMarketIndex, marketIndexInfo, [
+                  'idxNm',
+                ]);
+              }
+            }
+            this.logger.log(`Success SpoMarketIndex Update ${basDt}`);
+          });
+        } else {
+          this.logger.log(
+            'Undefined Response from getStockPriceInfo API',
+            combinedMarketIndexInfos,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          `Error fetching data from getMarketIndexInfo API: ${error}`,
         );
       }
     }

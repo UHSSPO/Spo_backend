@@ -76,7 +76,7 @@ export class SpoSummFinaInfo {
   @ApiProperty({ description: '기업자본금액', example: 250000000 })
   enpCptlAmt: number;
 
-  @Column({ name: 'FNCL_DEBT_RTO', type: 'bigint' })
+  @Column({ name: 'FNCL_DEBT_RTO', type: 'double' })
   @ApiProperty({ description: '재무제표부채비율', example: 18.3213 })
   fnclDebtRto: number;
 

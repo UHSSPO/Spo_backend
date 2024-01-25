@@ -6,11 +6,13 @@ import DatabaseLogger from './common/logger/databaseLogger';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BatchModule } from './routes/batch/batch.module';
+import { HomeModule } from './routes/home/home.module';
 
 @Module({
   imports: [
     AuthModule,
     BatchModule,
+    HomeModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,

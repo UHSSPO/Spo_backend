@@ -66,3 +66,10 @@ export interface IStockPriceInfoRes {
   lstgStCnt: number; // 상장주식수
   mrktTotAmt: number; // 시가총액
 }
+
+export interface IMarketIndexInfoRes {
+  idxNm: string; // 지수명
+  clpr: number; // 종가
+  vs: number; // 대비
+  fltRt: number; // 등락률
+}

@@ -10,10 +10,10 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDto, KakaoLoginDto, LoginDto } from './dto/req.dto';
 import { KakaoLoginResDto, LoginResDto } from './dto/res.dto';
-import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SpoUser } from '../../entity/spo_user.entity';
 import { LocalAuthGuard } from '../../auth/local-auth.guard';
-
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

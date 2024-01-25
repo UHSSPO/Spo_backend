@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -10,6 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SpoStockInfo } from './spo_stock_info.entity';
 
 @Entity({ name: 'SPO_STK_PRIC_THR_MON_INFO' })
+@Index('idx_srtn_cd', ['srtnCd'], { unique: true })
 export class SpoStockPriceThrMonInfo {
   @PrimaryGeneratedColumn({ name: 'STK_PRC_SEQ' })
   @ApiProperty({ description: '주식3개월전종가일련번호', example: 1 })
@@ -31,9 +33,13 @@ export class SpoStockPriceThrMonInfo {
   @ApiProperty({ description: '종가', example: 50000 })
   clpr: number;
 
-  @Column({ name: 'FLT_RT', type: 'bigint' })
+  @Column({ name: 'FLT_RT', type: 'double' })
   @ApiProperty({ description: '등락률', example: 3.25 })
   fltRt: number;
+
+  @Column({ name: 'VS', type: 'bigint' })
+  @ApiProperty({ description: '대비', example: 500 })
+  vs: number;
 
   @Column({ name: 'MKP', type: 'bigint' })
   @ApiProperty({ description: '시가', example: 40000 })
