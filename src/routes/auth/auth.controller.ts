@@ -13,7 +13,9 @@ import { KakaoLoginResDto, LoginResDto } from './dto/res.dto';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SpoUser } from '../../entity/spo_user.entity';
 import { LocalAuthGuard } from '../../auth/local-auth.guard';
+import { SuccessInterceptor } from '../../common/interceptor/success.interceptor';
 @ApiTags('Auth')
+@UseInterceptors(SuccessInterceptor)
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
