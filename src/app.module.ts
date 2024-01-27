@@ -7,6 +7,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BatchModule } from './routes/batch/batch.module';
 import { HomeModule } from './routes/home/home.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { SuccessInterceptor } from './common/interceptor/success.interceptor';
 
 @Module({
   imports: [
@@ -41,7 +43,12 @@ import { HomeModule } from './routes/home/home.module';
     }),
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SuccessInterceptor,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {

@@ -11,6 +11,8 @@ import { SpoSummFinaInfo } from './spo_summ_fina_info.entity';
 import { SpoIncoInfo } from './spo_inco_info.entity';
 import { SpoStockPriceInfo } from './spo_stock_price_info.entity';
 import { SpoStockPriceThrMonInfo } from './spo_stock_price_thr_mon_info.entity';
+import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
+import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
 
 @Entity({ name: 'SPO_STK_INFO' })
 @Index('idx_crno', ['crno'], { unique: true })
@@ -43,6 +45,10 @@ export class SpoStockInfo {
   @ApiProperty({ description: '시장구분', example: 'KOSPI' })
   mrktCtg: string;
 
+  @Column({ name: 'TRAD_SUSPD_YN', default: 'N' })
+  @ApiProperty({ description: '거래정지 여부', example: 'N' })
+  tradeSuspendYn: string;
+
   @UpdateDateColumn({
     name: 'UPDT_AT',
     type: 'timestamp',
@@ -65,4 +71,16 @@ export class SpoStockInfo {
     (prcThrMonInfo) => prcThrMonInfo.stockInfo,
   )
   prcThrMonInfo: SpoStockPriceInfo[];
+
+  @OneToMany(
+    () => SpoEnterpriseCategory,
+    (enterCateInfo) => enterCateInfo.stockInfo,
+  )
+  enterpriseCategories: SpoEnterpriseCategory[];
+
+  @OneToMany(
+    () => SpoEnterpriseScore,
+    (enterScoreInfo) => enterScoreInfo.stockInfo,
+  )
+  enterpriseScores: SpoEnterpriseScore[];
 }

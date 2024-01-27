@@ -40,8 +40,8 @@ export class BatchService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
-      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-    // this.shouldRunBatch = true;
+      // process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+      this.shouldRunBatch = true;
   }
 
   // 상장종목정보
@@ -296,6 +296,18 @@ export class BatchService implements OnApplicationBootstrap {
                 stockPriceInfo.lstgStCnt = matchingStockPriceInfo.lstgStCnt;
                 stockPriceInfo.mrktTotAmt = matchingStockPriceInfo.mrktTotAmt;
 
+                if (
+                  matchingStockPriceInfo.mkp == 0 &&
+                  matchingStockPriceInfo.hipr == 0 &&
+                  matchingStockPriceInfo.lopr == 0
+                ) {
+                  stockInfo.tradeSuspendYn = 'Y';
+                  await manager.update(
+                    SpoStockInfo,
+                    { srtnCd: stockInfo.srtnCd },
+                    { tradeSuspendYn: stockInfo.tradeSuspendYn },
+                  );
+                }
                 await manager.upsert(SpoStockPriceInfo, stockPriceInfo, [
                   'srtnCd',
                 ]);
@@ -303,7 +315,7 @@ export class BatchService implements OnApplicationBootstrap {
             }
           });
           this.logger.log(`Success SpoStockPriceInfo Update ${basDt}`);
-          await this.getStockPriceThreeMonthInfo();
+          // await this.getStockPriceThreeMonthInfo();
         } else {
           this.logger.log(
             'Undefined Response from getStockPriceInfo API',
@@ -381,6 +393,19 @@ export class BatchService implements OnApplicationBootstrap {
                   matchingStockPriceThreeMonthInfo.lstgStCnt;
                 stockPriceThreeMonthInfo.mrktTotAmt =
                   matchingStockPriceThreeMonthInfo.mrktTotAmt;
+
+                if (
+                  matchingStockPriceThreeMonthInfo.mkp == 0 &&
+                  matchingStockPriceThreeMonthInfo.hipr == 0 &&
+                  matchingStockPriceThreeMonthInfo.lopr == 0
+                ) {
+                  stockInfo.tradeSuspendYn = 'Y';
+                  await manager.update(
+                    SpoStockInfo,
+                    { srtnCd: stockInfo.srtnCd },
+                    { tradeSuspendYn: stockInfo.tradeSuspendYn },
+                  );
+                }
 
                 await manager.upsert(
                   SpoStockPriceThrMonInfo,
