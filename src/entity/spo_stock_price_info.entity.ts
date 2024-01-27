@@ -3,7 +3,7 @@ import {
   Entity,
   Index,
   JoinColumn,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -73,7 +73,7 @@ export class SpoStockPriceInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @ManyToOne(() => SpoStockInfo) // SpoStockInfo 엔터티와의 다대일(ManyToOne) 관계를 정의합니다.
+  @OneToOne(() => SpoStockInfo) // SpoStockInfo 엔터티와의 다대일(ManyToOne) 관계를 정의합니다.
   @JoinColumn({
     name: 'STK_INFO_SEQ',
     referencedColumnName: 'stockInfoSequence',

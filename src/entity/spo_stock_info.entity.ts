@@ -3,6 +3,7 @@ import {
   Entity,
   Index,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -57,30 +58,30 @@ export class SpoStockInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @OneToMany(() => SpoSummFinaInfo, (finaInfo) => finaInfo.stockInfo)
-  summFinaInfo: SpoSummFinaInfo[];
+  @OneToOne(() => SpoSummFinaInfo, (finaInfo) => finaInfo.stockInfo)
+  summFinaInfo: SpoSummFinaInfo;
 
   @OneToMany(() => SpoIncoInfo, (incoInfo) => incoInfo.stockInfo)
   incoInfo: SpoIncoInfo[];
 
-  @OneToMany(() => SpoStockPriceInfo, (prcInfo) => prcInfo.stockInfo)
-  prcInfo: SpoStockPriceInfo[];
+  @OneToOne(() => SpoStockPriceInfo, (prcInfo) => prcInfo.stockInfo)
+  prcInfo: SpoStockPriceInfo;
 
-  @OneToMany(
+  @OneToOne(
     () => SpoStockPriceThrMonInfo,
     (prcThrMonInfo) => prcThrMonInfo.stockInfo,
   )
-  prcThrMonInfo: SpoStockPriceInfo[];
+  prcThrMonInfo: SpoStockPriceInfo;
 
-  @OneToMany(
+  @OneToOne(
     () => SpoEnterpriseCategory,
     (enterCateInfo) => enterCateInfo.stockInfo,
   )
-  enterpriseCategories: SpoEnterpriseCategory[];
+  enterpriseCategories: SpoEnterpriseCategory;
 
-  @OneToMany(
+  @OneToOne(
     () => SpoEnterpriseScore,
     (enterScoreInfo) => enterScoreInfo.stockInfo,
   )
-  enterpriseScores: SpoEnterpriseScore[];
+  enterpriseScores: SpoEnterpriseScore;
 }
