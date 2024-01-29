@@ -13,7 +13,7 @@ import { SpoStockInfo } from './spo_stock_info.entity';
 export class SpoIncoInfo {
   @PrimaryGeneratedColumn({ name: 'INCO_SEQ' })
   @ApiProperty({ description: '손익계산서 일련번호', example: 1 })
-  finaInfoSequence: number;
+  incoInfoSequence: number;
 
   @Column({ name: 'STK_INFO_SEQ' })
   @ApiProperty({ description: '주식 상장 정보 일련번호', example: 1 })

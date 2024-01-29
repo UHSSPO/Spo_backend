@@ -50,6 +50,10 @@ export class SpoStockInfo {
   @ApiProperty({ description: '거래정지 여부', example: 'N' })
   tradeSuspendYn: string;
 
+  @Column({ name: 'BAD_DATA', default: 'N' })
+  @ApiProperty({ description: '부실 데이터 여부', example: 'N' })
+  badData: string;
+
   @UpdateDateColumn({
     name: 'UPDT_AT',
     type: 'timestamp',

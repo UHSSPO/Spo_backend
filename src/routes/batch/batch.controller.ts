@@ -35,4 +35,9 @@ export class BatchController {
   marketIndexBatchTask() {
     return this.batchService.getMarketIndexInfo();
   }
+
+  @Get('/enterprise-category')
+  enterpriseCategory() {
+    return this.batchService.updateEnterpriseCategory();
+  }
 }
