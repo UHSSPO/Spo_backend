@@ -84,7 +84,9 @@ export class SpoSummFinaInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @OneToOne(() => SpoStockInfo)
+  @OneToOne(() => SpoStockInfo, {
+    cascade: true,
+  })
   @JoinColumn({
     name: 'STK_INFO_SEQ',
     referencedColumnName: 'stockInfoSequence',

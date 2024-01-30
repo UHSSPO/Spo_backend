@@ -3,18 +3,17 @@ import {
   Entity,
   Index,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { SpoStockInfo } from './spo_stock_info.entity';
 
-@Entity({ name: 'SPO_STK_PRIC_THR_MON_INFO' })
-@Index('idx_srtn_cd', ['srtnCd'], { unique: true })
-export class SpoStockPriceThrMonInfo {
+@Entity({ name: 'SPO_STK_PRIC_15TH_INFO' })
+export class SpoStockPrice15thInfo {
   @PrimaryGeneratedColumn({ name: 'STK_PRC_SEQ' })
-  @ApiProperty({ description: '주식3개월전종가일련번호', example: 1 })
+  @ApiProperty({ description: '15일 주식 가격정보', example: 1 })
   stockPriceSequence: number;
 
   @Column({ name: 'STK_INFO_SEQ' })
@@ -28,6 +27,10 @@ export class SpoStockPriceThrMonInfo {
   @Column({ name: 'ITMS_NM' })
   @ApiProperty({ description: '종목명', example: '삼성전자' })
   itmsNm: string;
+
+  @Column({ name: 'BAS_DT' })
+  @ApiProperty({ description: '기준일자', example: '20240102' })
+  basDt: string;
 
   @Column({ name: 'CLPR', type: 'bigint' })
   @ApiProperty({ description: '종가', example: 50000 })
@@ -73,7 +76,9 @@ export class SpoStockPriceThrMonInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @OneToOne(() => SpoStockInfo, { eager: true }) // SpoStockInfo 엔터티와의 다대일(ManyToOne) 관계를 정의합니다.
+  @ManyToOne(() => SpoStockInfo, {
+    cascade: true,
+  })
   @JoinColumn({
     name: 'STK_INFO_SEQ',
     referencedColumnName: 'stockInfoSequence',

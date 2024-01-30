@@ -78,7 +78,9 @@ export class SpoEnterpriseScore {
   })
   enterpriseCategory: SpoEnterpriseCategory;
 
-  @OneToOne(() => SpoStockInfo)
+  @OneToOne(() => SpoStockInfo, {
+    cascade: true,
+  })
   @JoinColumn({
     name: 'STK_INFO_SEQ',
     referencedColumnName: 'stockInfoSequence',

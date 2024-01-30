@@ -18,7 +18,7 @@ import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoSummFinaInfo } from '../../entity/spo_summ_fina_info.entity';
 import { SpoIncoInfo } from '../../entity/spo_inco_info.entity';
 import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
-import { SpoStockPriceThrMonInfo } from '../../entity/spo_stock_price_thr_mon_info.entity';
+import { SpoStockPrice15thInfo } from '../../entity/spo_stock_price_thr_mon_info.entity';
 import { SpoMarketIndex } from '../../entity/spo_market_index.entity';
 import { SpoEnterpriseCategory } from '../../entity/spo_entpr_categr.entity';
 
@@ -35,14 +35,14 @@ export class BatchService implements OnApplicationBootstrap {
   private finaStatInfoResData: Array<IFinaStatInfoRes> = [];
   private incoStataInfoResData: Array<IIncoStatInfoRes> = [];
   private stockPriceInfoResData: Array<IStockPriceInfoRes> = [];
-  private stockPriceThreeMonthInfoResData: Array<IStockPriceInfoRes> = [];
+  private stockPrice15thInfoResData: Array<IStockPriceInfoRes> = [];
   private stockMarketIndexInfoResData: Array<IMarketIndexInfoRes> = [];
   private derivationMarketIndexInfoResData: Array<IMarketIndexInfoRes> = [];
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
-      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-    // this.shouldRunBatch = true;
+      // process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+      this.shouldRunBatch = true;
   }
 
   // 상장종목정보
@@ -103,7 +103,8 @@ export class BatchService implements OnApplicationBootstrap {
 
         if (
           StringUtil.isNotEmpty(this.stockPriceInfoResData) &&
-          _.isArray(this.stockPriceInfoResData)
+          StringUtil.isNotEmpty(this.krxListedInfoResData) &&
+          StringUtil.isNotEmpty(this.finaStatInfoResData)
         ) {
           let filteredDataArray = this.krxListedInfoResData.filter(
             (krxListItem) =>
@@ -201,6 +202,7 @@ export class BatchService implements OnApplicationBootstrap {
               }
             }
           });
+          await this.getIncoStatInfo();
           this.logger.log(`Success SpoSummFinaInfo Update`);
         } else {
           this.logger.log('Undefined Response from getFinaStatInfo API');
@@ -327,6 +329,7 @@ export class BatchService implements OnApplicationBootstrap {
                 stockPriceInfo.itmsNm = matchingStockPriceInfo.itmsNm;
                 stockPriceInfo.clpr = matchingStockPriceInfo.clpr;
                 stockPriceInfo.fltRt = matchingStockPriceInfo.fltRt;
+                stockPriceInfo.basDt = matchingStockPriceInfo.basDt;
                 stockPriceInfo.vs = matchingStockPriceInfo.vs;
                 stockPriceInfo.mkp = matchingStockPriceInfo.mkp;
                 stockPriceInfo.hipr = matchingStockPriceInfo.hipr;
@@ -355,7 +358,7 @@ export class BatchService implements OnApplicationBootstrap {
             }
           });
           this.logger.log(`Success SpoStockPriceInfo Update ${basDt}`);
-          // await this.getStockPriceThreeMonthInfo();
+          await this.getStockPrice15thInfo();
         } else {
           this.logger.log(
             'Undefined Response from getStockPriceInfo API',
@@ -371,103 +374,72 @@ export class BatchService implements OnApplicationBootstrap {
   }
 
   // 3개월 전 주식 시세 정보
-  async getStockPriceThreeMonthInfo() {
+  async getStockPrice15thInfo() {
     if (this.shouldRunBatch) {
-      const basDt = StringUtil.getThreeMonthDate();
+      const basDt = StringUtil.get15thDate();
       try {
         // 3개월 전 주식 시세 정보 호출
-        const stockPriceThreeMonthInfoRes: any = await axios.get(
+        const stockPrice15thInfoRes: any = await axios.get(
           `${
             OpenApi.GetStockPriceInfoService
           }?serviceKey=${this.configService.get<string>(
             'GET_KRX_LIST_INFO_KEY',
-          )}&basDt=${basDt}&resultType=${this.configService.get<string>(
+          )}&beginBasDt=${basDt}&resultType=${this.configService.get<string>(
             'RESULT_TYPE',
           )}&pageNo=${this.configService.get<string>(
             'PAGE_NO',
-          )}&numOfRows=${this.configService.get<string>(
-            'GET_KRX_LIST_INFO_ROW',
-          )}`,
+          )}&numOfRows=200000&beginMrktTotAmt=500000000000`,
         );
-        this.stockPriceThreeMonthInfoResData =
-          stockPriceThreeMonthInfoRes.data?.response?.body?.items?.item;
+        this.stockPrice15thInfoResData =
+          stockPrice15thInfoRes.data?.response?.body?.items?.item;
 
         if (
-          StringUtil.isNotEmpty(this.stockPriceThreeMonthInfoResData) &&
-          _.isArray(this.stockPriceThreeMonthInfoResData)
+          StringUtil.isNotEmpty(this.stockPrice15thInfoResData) &&
+          _.isArray(this.stockPrice15thInfoResData)
         ) {
           await this.dataSource.transaction(async (manager) => {
             const stockInfos = await manager.find(SpoStockInfo);
+            await manager.clear(SpoStockPrice15thInfo);
             for (const stockInfo of stockInfos) {
-              const matchingStockPriceThreeMonthInfo =
-                this.stockPriceThreeMonthInfoResData.find(
-                  (stockPriceThreeMonthInfo) =>
-                    'A' + stockPriceThreeMonthInfo.srtnCd === stockInfo.srtnCd,
+              const matchingStockPrice15thInfos =
+                this.stockPrice15thInfoResData.filter(
+                  (stockPrice15thInfo) =>
+                    'A' + stockPrice15thInfo.srtnCd === stockInfo.srtnCd,
                 );
-              if (matchingStockPriceThreeMonthInfo) {
-                const stockPriceThreeMonthInfo = new SpoStockPriceThrMonInfo();
-                stockPriceThreeMonthInfo.stockInfo = stockInfo;
-                stockPriceThreeMonthInfo.stockInfoSequence =
-                  stockInfo.stockInfoSequence;
-                stockPriceThreeMonthInfo.srtnCd =
-                  matchingStockPriceThreeMonthInfo.srtnCd;
-                stockPriceThreeMonthInfo.itmsNm =
-                  matchingStockPriceThreeMonthInfo.itmsNm;
-                stockPriceThreeMonthInfo.clpr =
-                  matchingStockPriceThreeMonthInfo.clpr;
-                stockPriceThreeMonthInfo.fltRt =
-                  matchingStockPriceThreeMonthInfo.fltRt;
-                stockPriceThreeMonthInfo.vs =
-                  matchingStockPriceThreeMonthInfo.vs;
-                stockPriceThreeMonthInfo.mkp =
-                  matchingStockPriceThreeMonthInfo.mkp;
-                stockPriceThreeMonthInfo.hipr =
-                  matchingStockPriceThreeMonthInfo.hipr;
-                stockPriceThreeMonthInfo.lopr =
-                  matchingStockPriceThreeMonthInfo.lopr;
-                stockPriceThreeMonthInfo.trqu =
-                  matchingStockPriceThreeMonthInfo.trqu;
-                stockPriceThreeMonthInfo.trPrc =
-                  matchingStockPriceThreeMonthInfo.trPrc;
-                stockPriceThreeMonthInfo.lstgStCnt =
-                  matchingStockPriceThreeMonthInfo.lstgStCnt;
-                stockPriceThreeMonthInfo.mrktTotAmt =
-                  matchingStockPriceThreeMonthInfo.mrktTotAmt;
+              if (matchingStockPrice15thInfos) {
+                for (const matchingStockPrice15thInfo of matchingStockPrice15thInfos) {
+                  const stockPrice15thInfo = new SpoStockPrice15thInfo();
+                  stockPrice15thInfo.stockInfo = stockInfo;
+                  stockPrice15thInfo.stockInfoSequence =
+                    stockInfo.stockInfoSequence;
+                  stockPrice15thInfo.srtnCd = matchingStockPrice15thInfo.srtnCd;
+                  stockPrice15thInfo.itmsNm = matchingStockPrice15thInfo.itmsNm;
+                  stockPrice15thInfo.clpr = matchingStockPrice15thInfo.clpr;
+                  stockPrice15thInfo.fltRt = matchingStockPrice15thInfo.fltRt;
+                  stockPrice15thInfo.basDt = matchingStockPrice15thInfo.basDt;
+                  stockPrice15thInfo.vs = matchingStockPrice15thInfo.vs;
+                  stockPrice15thInfo.mkp = matchingStockPrice15thInfo.mkp;
+                  stockPrice15thInfo.hipr = matchingStockPrice15thInfo.hipr;
+                  stockPrice15thInfo.lopr = matchingStockPrice15thInfo.lopr;
+                  stockPrice15thInfo.trqu = matchingStockPrice15thInfo.trqu;
+                  stockPrice15thInfo.trPrc = matchingStockPrice15thInfo.trPrc;
+                  stockPrice15thInfo.lstgStCnt =
+                    matchingStockPrice15thInfo.lstgStCnt;
+                  stockPrice15thInfo.mrktTotAmt =
+                    matchingStockPrice15thInfo.mrktTotAmt;
 
-                if (
-                  matchingStockPriceThreeMonthInfo.mkp == 0 &&
-                  matchingStockPriceThreeMonthInfo.hipr == 0 &&
-                  matchingStockPriceThreeMonthInfo.lopr == 0
-                ) {
-                  stockInfo.tradeSuspendYn = 'Y';
-                  await manager.update(
-                    SpoStockInfo,
-                    { srtnCd: stockInfo.srtnCd },
-                    { tradeSuspendYn: stockInfo.tradeSuspendYn },
-                  );
+                  await manager.save(SpoStockPrice15thInfo, stockPrice15thInfo);
                 }
-
-                await manager.upsert(
-                  SpoStockPriceThrMonInfo,
-                  stockPriceThreeMonthInfo,
-                  ['srtnCd'],
-                );
-              } else {
-                await manager.update(
-                  SpoStockInfo,
-                  { srtnCd: stockInfo.srtnCd },
-                  { badData: 'Y' },
-                );
               }
             }
           });
 
-          this.logger.log(`Success SpoStockPriceThrMonInfo Update ${basDt}`);
-          await this.getMarketIndexInfo();
+          this.logger.log(`Success SpoStockPrice15thInfo Update ${basDt}`);
+          // await this.getMarketIndexInfo();
         } else {
           this.logger.log(
-            'Undefined Response from stockPriceThreeMonthInfoResData API',
-            this.stockPriceThreeMonthInfoResData,
+            'Undefined Response from stockPrice15thInfoResData API',
+            this.stockPrice15thInfoResData,
           );
         }
       } catch (error) {
@@ -619,6 +591,12 @@ export class BatchService implements OnApplicationBootstrap {
                 { badData: 'Y' },
               );
             }
+            enterpriseCategoryInfo.financialStatementDebtRatio =
+              (finaInfo.enpTdbtAmt / finaInfo.enpTcptAmt) * 100; // (부채 / 자본) * 100
+            enterpriseCategoryInfo.roe =
+              (finaInfo.enpCrtmNpf / finaInfo.enpTcptAmt) * 100; // (당기순이익 / 기업총자본금액) * 100
+            enterpriseCategoryInfo.roa =
+              (finaInfo.enpCrtmNpf / finaInfo.enpTastAmt) * 100; // (당기순이익 / 기업총자산금액) * 100
           }
         }
       }

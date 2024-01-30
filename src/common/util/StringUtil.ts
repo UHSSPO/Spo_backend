@@ -77,21 +77,14 @@ export default class StringUtil {
     return dayOfWeek === 6 || dayOfWeek === 7;
   }
 
-  public static getThreeMonthDate(dateTimeFormat?: string) {
-    let days = 90;
-    let threeMonthDate = DateTime.local()
+  public static get15thDate(dateTimeFormat?: string) {
+    const days = 15;
+    const date = DateTime.local()
       .setLocale('ko')
       .minus({ days: days })
       .toFormat(dateTimeFormat || 'yyyyLLdd');
-    while (this.getHoliday(threeMonthDate) || this.isWeekend(threeMonthDate)) {
-      days += 1;
-      threeMonthDate = DateTime.local()
-        .setLocale('ko')
-        .minus({ days: days })
-        .toFormat(dateTimeFormat || 'yyyyLLdd');
-    }
 
-    return threeMonthDate;
+    return date;
   }
 
   public static getHoliday(str: string) {

@@ -26,9 +26,9 @@ export class BatchController {
     return this.batchService.getStockPriceInfo();
   }
 
-  @Get('/stock-price/three-month')
+  @Get('/stock-price/15th')
   stockPriceThrMonTask() {
-    return this.batchService.getStockPriceThreeMonthInfo();
+    return this.batchService.getStockPrice15thInfo();
   }
 
   @Get('/market-index')

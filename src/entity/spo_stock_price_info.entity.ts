@@ -14,7 +14,7 @@ import { SpoStockInfo } from './spo_stock_info.entity';
 @Index('idx_srtn_cd', ['srtnCd'], { unique: true })
 export class SpoStockPriceInfo {
   @PrimaryGeneratedColumn({ name: 'STK_PRC_SEQ' })
-  @ApiProperty({ description: '주식전일종가일련번호', example: 1 })
+  @ApiProperty({ description: '주식 가격 정보 일련번호', example: 1 })
   stockPriceSequence: number;
 
   @Column({ name: 'STK_INFO_SEQ' })
@@ -28,6 +28,10 @@ export class SpoStockPriceInfo {
   @Column({ name: 'ITMS_NM' })
   @ApiProperty({ description: '종목명', example: '삼성전자' })
   itmsNm: string;
+
+  @Column({ name: 'BAS_DT' })
+  @ApiProperty({ description: '기준일자', example: '20240102' })
+  basDt: string;
 
   @Column({ name: 'CLPR', type: 'bigint' })
   @ApiProperty({ description: '종가', example: 50000 })
@@ -73,7 +77,9 @@ export class SpoStockPriceInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @OneToOne(() => SpoStockInfo) // SpoStockInfo 엔터티와의 다대일(ManyToOne) 관계를 정의합니다.
+  @OneToOne(() => SpoStockInfo, {
+    cascade: true,
+  })
   @JoinColumn({
     name: 'STK_INFO_SEQ',
     referencedColumnName: 'stockInfoSequence',
