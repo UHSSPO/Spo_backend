@@ -41,8 +41,8 @@ export class BatchService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
-      // process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-      this.shouldRunBatch = true;
+      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+    // this.shouldRunBatch = true;
   }
 
   // 상장종목정보
