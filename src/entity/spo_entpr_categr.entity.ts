@@ -2,7 +2,6 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -19,6 +18,10 @@ export class SpoEnterpriseCategory {
   @Column({ name: 'STK_INFO_SEQ' })
   @ApiProperty({ description: '주식 상장 정보 일련번호', example: 1 })
   stockInfoSequence: number;
+
+  @Column({ name: 'ENTPR_ITMS_NM' })
+  @ApiProperty({ description: '종목명', example: '삼성전자' })
+  itmsNm: string;
 
   @Column({ name: 'PBR', type: 'double' })
   @ApiProperty({ description: 'PBR', example: 122 })
@@ -40,7 +43,7 @@ export class SpoEnterpriseCategory {
   incomeBeforeTaxExpenseDiff: number;
 
   @Column({ name: 'FNCL_STAT_DEBR_RAT', type: 'double' })
-  @ApiProperty({ description: '재무제표부 채비율', example: 15.2 })
+  @ApiProperty({ description: '재무제표 부채비율', example: 15.2 })
   financialStatementDebtRatio: number;
 
   @Column({ name: 'ROE', type: 'double' })
@@ -50,10 +53,6 @@ export class SpoEnterpriseCategory {
   @Column({ name: 'ROA', type: 'double' })
   @ApiProperty({ description: 'ROA', example: 5.2 })
   roa: number;
-
-  @Column({ name: 'THT_MON_AVG_STK_PRIC_FLUCT', type: 'double' })
-  @ApiProperty({ description: '3개월 주가 등락률 평균', example: 12.1 })
-  threeMonthAverageStockPrice: number;
 
   @Column({ name: 'VOLUME', type: 'double' })
   @ApiProperty({ description: '거래량 변화 비율', example: 22 })
@@ -67,12 +66,11 @@ export class SpoEnterpriseCategory {
   @ApiProperty({ description: '거래대금 거래량 비율', example: 11 })
   volumeRatio: number;
 
-  @OneToOne(() => SpoEnterpriseScore, (score) => score.enterpriseCategory, {
-    cascade: true,
-  })
-  @JoinColumn({
-    name: 'ENTPR_SCOR_SEQ',
-  })
+  @Column({ name: 'MOV_AVG' })
+  @ApiProperty({ description: '이동평균선', example: 'UP' })
+  moveAverage: string;
+
+  @OneToOne(() => SpoEnterpriseScore, (score) => score.enterpriseCategory)
   enterpriseScore: SpoEnterpriseScore;
 
   @OneToOne(() => SpoStockInfo, {

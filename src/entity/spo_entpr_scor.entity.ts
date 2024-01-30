@@ -24,6 +24,10 @@ export class SpoEnterpriseScore {
   @ApiProperty({ description: '주식 상장 정보 일련번호', example: 1 })
   stockInfoSequence: number;
 
+  @Column({ name: 'ENTPR_ITMS_NM' })
+  @ApiProperty({ description: '종목명', example: '삼성전자' })
+  itmsNm: string;
+
   @Column({ name: 'PBR_SCOR' })
   @ApiProperty({ description: 'PBR 점수', example: 15 })
   pbrScore: number;

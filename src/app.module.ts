@@ -37,6 +37,7 @@ import { SuccessInterceptor } from './common/interceptor/success.interceptor';
           collation: 'utf8mb4_unicode_ci',
           synchronize: false,
           timezone: 'Z',
+          bigNumberStrings: false,
           logger: new DatabaseLogger(),
         };
       },

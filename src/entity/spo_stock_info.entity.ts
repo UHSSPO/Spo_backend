@@ -11,7 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SpoSummFinaInfo } from './spo_summ_fina_info.entity';
 import { SpoIncoInfo } from './spo_inco_info.entity';
 import { SpoStockPriceInfo } from './spo_stock_price_info.entity';
-import { SpoStockPrice15thInfo } from './spo_stock_price_thr_mon_info.entity';
+import { SpoStockPrice15thInfo } from './spo_stock_price_15th_info.entity';
 import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
 import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
 
