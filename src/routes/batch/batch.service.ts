@@ -373,12 +373,12 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
-  // 3개월 전 주식 시세 정보
+  // 15일 주식 시세 정보
   async getStockPrice15thInfo() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.get15thDate();
       try {
-        // 3개월 전 주식 시세 정보 호출
+        // 15일 주식 시세 정보 호출
         const stockPrice15thInfoRes: any = await axios.get(
           `${
             OpenApi.GetStockPriceInfoService
@@ -435,7 +435,7 @@ export class BatchService implements OnApplicationBootstrap {
           });
 
           this.logger.log(`Success SpoStockPrice15thInfo Update ${basDt}`);
-          // await this.getMarketIndexInfo();
+          await this.getMarketIndexInfo();
         } else {
           this.logger.log(
             'Undefined Response from stockPrice15thInfoResData API',
