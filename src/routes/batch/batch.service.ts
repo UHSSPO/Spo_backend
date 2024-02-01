@@ -21,6 +21,8 @@ import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
 import { SpoStockPrice15thInfo } from '../../entity/spo_stock_price_15th_info.entity';
 import { SpoMarketIndex } from '../../entity/spo_market_index.entity';
 import { SpoEnterpriseCategory } from '../../entity/spo_entpr_categr.entity';
+import { SpoEnterpriseScore } from '../../entity/spo_entpr_scor.entity';
+import { BatchCalculator } from '../../common/util/batch/BatchCalculator';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -659,7 +661,7 @@ export class BatchService implements OnApplicationBootstrap {
                 ); // (당기순이익 / 기업총자산금액) * 100
 
                 enterpriseCategoryInfo.moveAverage =
-                  this.calculateMovingAverage(stock15thPriceInfos); // 이동평균선 계산
+                  BatchCalculator.calculateMovingAverage(stock15thPriceInfos); // 이동평균선 계산
                 enterpriseCategoryInfo.volume = parseFloat(
                   (
                     ((stockPriceInfo.trqu - yesterdayStockPriceInfo.trqu) /
@@ -699,40 +701,31 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
-  // 이동평균선 계산
-  calculateMovingAverage(stock15thPriceInfos: SpoStockPrice15thInfo[]): string {
-    // basDt를 기준으로 날짜순으로 정렬
-    const sortedStock15thPriceInfos = [...stock15thPriceInfos].sort(
-      (a, b) => parseInt(a.basDt, 10) - parseInt(b.basDt, 10),
-    );
-
-    let result = '';
-    let today = 0;
-    let yesterday = 0;
-
-    for (let i = 0; i < sortedStock15thPriceInfos.length - 1; i++) {
-      today += sortedStock15thPriceInfos[i].clpr;
+  async updateEnterpriseScore() {
+    if (this.shouldRunBatch) {
+      await this.dataSource.transaction(async (manager) => {
+        const stockInfos = await manager.find(SpoStockInfo);
+        if (StringUtil.isNotEmpty(stockInfos)) {
+          for (const stockInfo of stockInfos) {
+            if (stockInfo.badData === 'N' && stockInfo.tradeSuspendYn === 'N') {
+              const enterpriseScoreInfo = new SpoEnterpriseScore();
+              const enterpriseCategoryInfo = await manager.findOne(
+                SpoEnterpriseCategory,
+                {
+                  where: { stockInfoSequence: stockInfo.stockInfoSequence },
+                },
+              );
+              enterpriseScoreInfo.financialStatementDebtRatioScore =
+                BatchCalculator.getFinancialStatementDebtRatioScore(
+                  enterpriseCategoryInfo.financialStatementDebtRatio,
+                );
+              enterpriseScoreInfo.roaScore = BatchCalculator.getRoaScore(
+                enterpriseCategoryInfo.roa,
+              );
+            }
+          }
+        }
+      });
     }
-
-    for (let i = 0; i < sortedStock15thPriceInfos.length; i++) {
-      if (i === 0) {
-        yesterday = 0;
-      } else {
-        yesterday += sortedStock15thPriceInfos[i].clpr;
-      }
-    }
-
-    today = today / sortedStock15thPriceInfos.length - 1;
-    yesterday = yesterday / sortedStock15thPriceInfos.length - 1;
-
-    if (today > yesterday) {
-      result = 'UP';
-    } else if (today < yesterday) {
-      result = 'DOWN';
-    } else {
-      result = 'FLUC';
-    }
-
-    return result;
   }
 }

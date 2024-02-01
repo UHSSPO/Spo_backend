@@ -2,9 +2,9 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
@@ -59,9 +59,9 @@ export class SpoEnterpriseScore {
   @ApiProperty({ description: 'ROA 점수', example: 20 })
   roaScore: number;
 
-  @Column({ name: 'THT_MON_AVG_STK_PRIC_FLUCT_SCOR' })
+  @Column({ name: 'MOV_AVG_SCOR' })
   @ApiProperty({ description: '3개월 주가 등락률 평균 점수', example: 25 })
-  threeMonthAverageStockPriceScore: number;
+  moveAverageScore: number;
 
   @Column({ name: 'VOLUME_SCOR' })
   @ApiProperty({ description: '거래량 변화 비율 점수', example: 25 })
@@ -74,6 +74,10 @@ export class SpoEnterpriseScore {
   @Column({ name: 'VOL_RAT_SCOR' })
   @ApiProperty({ description: '거래대금 거래량 비율 점수', example: 10 })
   volumeRatioScore: number;
+
+  @UpdateDateColumn({ name: 'UPDT_AT' })
+  @ApiProperty({ description: '업데이트 일자', example: '20231218' })
+  updateAt: Date;
 
   @OneToOne(() => SpoEnterpriseCategory, (category) => category.enterpriseScore)
   @JoinColumn({

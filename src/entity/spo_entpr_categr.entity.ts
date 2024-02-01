@@ -4,6 +4,7 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
@@ -69,6 +70,10 @@ export class SpoEnterpriseCategory {
   @Column({ name: 'MOV_AVG' })
   @ApiProperty({ description: '이동평균선', example: 'UP' })
   moveAverage: string;
+
+  @UpdateDateColumn({ name: 'UPDT_AT' })
+  @ApiProperty({ description: '업데이트 일자', example: '20231218' })
+  updateAt: Date;
 
   @OneToOne(() => SpoEnterpriseScore, (score) => score.enterpriseCategory)
   enterpriseScore: SpoEnterpriseScore;

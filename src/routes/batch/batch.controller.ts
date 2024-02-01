@@ -40,4 +40,9 @@ export class BatchController {
   enterpriseCategory() {
     return this.batchService.updateEnterpriseCategory();
   }
+
+  @Get('/enterprise-score')
+  enterpriseScore() {
+    return this.batchService.updateEnterpriseScore();
+  }
 }
