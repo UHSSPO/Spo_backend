@@ -26,13 +26,23 @@ export class BatchController {
     return this.batchService.getStockPriceInfo();
   }
 
-  @Get('/stock-price/three-month')
+  @Get('/stock-price/15th')
   stockPriceThrMonTask() {
-    return this.batchService.getStockPriceThreeMonthInfo();
+    return this.batchService.getStockPrice15thInfo();
   }
 
   @Get('/market-index')
   marketIndexBatchTask() {
     return this.batchService.getMarketIndexInfo();
+  }
+
+  @Get('/enterprise-category')
+  enterpriseCategory() {
+    return this.batchService.updateEnterpriseCategory();
+  }
+
+  @Get('/enterprise-score')
+  enterpriseScore() {
+    return this.batchService.updateEnterpriseScore();
   }
 }

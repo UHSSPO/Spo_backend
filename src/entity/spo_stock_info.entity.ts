@@ -3,6 +3,7 @@ import {
   Entity,
   Index,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -10,7 +11,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SpoSummFinaInfo } from './spo_summ_fina_info.entity';
 import { SpoIncoInfo } from './spo_inco_info.entity';
 import { SpoStockPriceInfo } from './spo_stock_price_info.entity';
-import { SpoStockPriceThrMonInfo } from './spo_stock_price_thr_mon_info.entity';
+import { SpoStockPrice15thInfo } from './spo_stock_price_15th_info.entity';
+import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
+import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
 
 @Entity({ name: 'SPO_STK_INFO' })
 @Index('idx_crno', ['crno'], { unique: true })
@@ -43,6 +46,14 @@ export class SpoStockInfo {
   @ApiProperty({ description: '시장구분', example: 'KOSPI' })
   mrktCtg: string;
 
+  @Column({ name: 'TRAD_SUSPD_YN', default: 'N' })
+  @ApiProperty({ description: '거래정지 여부', example: 'N' })
+  tradeSuspendYn: string;
+
+  @Column({ name: 'BAD_DATA', default: 'N' })
+  @ApiProperty({ description: '부실 데이터 여부', example: 'N' })
+  badData: string;
+
   @UpdateDateColumn({
     name: 'UPDT_AT',
     type: 'timestamp',
@@ -51,18 +62,30 @@ export class SpoStockInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @OneToMany(() => SpoSummFinaInfo, (finaInfo) => finaInfo.stockInfo)
-  summFinaInfo: SpoSummFinaInfo[];
+  @OneToOne(() => SpoSummFinaInfo, (finaInfo) => finaInfo.stockInfo)
+  summFinaInfo: SpoSummFinaInfo;
 
   @OneToMany(() => SpoIncoInfo, (incoInfo) => incoInfo.stockInfo)
   incoInfo: SpoIncoInfo[];
 
-  @OneToMany(() => SpoStockPriceInfo, (prcInfo) => prcInfo.stockInfo)
-  prcInfo: SpoStockPriceInfo[];
+  @OneToOne(() => SpoStockPriceInfo, (prcInfo) => prcInfo.stockInfo)
+  prcInfo: SpoStockPriceInfo;
 
   @OneToMany(
-    () => SpoStockPriceThrMonInfo,
-    (prcThrMonInfo) => prcThrMonInfo.stockInfo,
+    () => SpoStockPrice15thInfo,
+    (prc15tnMonInfo) => prc15tnMonInfo.stockInfo,
   )
-  prcThrMonInfo: SpoStockPriceInfo[];
+  prc15tnMonInfo: SpoStockPriceInfo[];
+
+  @OneToOne(
+    () => SpoEnterpriseCategory,
+    (enterCateInfo) => enterCateInfo.stockInfo,
+  )
+  enterpriseCategories: SpoEnterpriseCategory;
+
+  @OneToOne(
+    () => SpoEnterpriseScore,
+    (enterScoreInfo) => enterScoreInfo.stockInfo,
+  )
+  enterpriseScores: SpoEnterpriseScore;
 }
