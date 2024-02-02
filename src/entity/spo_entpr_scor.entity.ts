@@ -72,8 +72,16 @@ export class SpoEnterpriseScore {
   changeMarketGapScore: number;
 
   @Column({ name: 'VOL_RAT_SCOR' })
-  @ApiProperty({ description: '거래대금 거래량 비율 점수', example: 10 })
+  @ApiProperty({ description: '시가총액 기준 거래대금 비율 점수', example: 10 })
   volumeRatioScore: number;
+
+  @Column({ name: 'TOTL_SCOR' })
+  @ApiProperty({ description: '총점', example: 35 })
+  totalScore: number;
+
+  @Column({ name: 'RAT' })
+  @ApiProperty({ description: '등급', example: 'A' })
+  rating: string;
 
   @UpdateDateColumn({ name: 'UPDT_AT' })
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })

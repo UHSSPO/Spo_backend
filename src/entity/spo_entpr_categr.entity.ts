@@ -64,7 +64,7 @@ export class SpoEnterpriseCategory {
   changeMarketGap: number;
 
   @Column({ name: 'VOL_RAT', type: 'double' })
-  @ApiProperty({ description: '거래대금 거래량 비율', example: 11 })
+  @ApiProperty({ description: '시가총액 기준 거래대금 비율', example: 11 })
   volumeRatio: number;
 
   @Column({ name: 'MOV_AVG' })

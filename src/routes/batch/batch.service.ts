@@ -680,8 +680,11 @@ export class BatchService implements OnApplicationBootstrap {
                 ); // {(현재시총 - 이전시총)/이전시총} * 100
 
                 enterpriseCategoryInfo.volumeRatio = parseFloat(
-                  (stockPriceInfo.trPrc / stockPriceInfo.trqu).toFixed(2),
-                ); // 거래대금 / 거래량
+                  (
+                    (stockPriceInfo.trPrc / stockPriceInfo.mrktTotAmt) *
+                    100
+                  ).toFixed(2),
+                ); // (거래대금 / 시총) * 100
 
                 await manager.update(
                   SpoStockInfo,
@@ -715,6 +718,11 @@ export class BatchService implements OnApplicationBootstrap {
                   where: { stockInfoSequence: stockInfo.stockInfoSequence },
                 },
               );
+              enterpriseScoreInfo.stockInfoSequence =
+                stockInfo.stockInfoSequence;
+              enterpriseScoreInfo.enterpriseCategorySequence =
+                enterpriseCategoryInfo.enterpriseCategorySequence;
+              enterpriseScoreInfo.itmsNm = stockInfo.itmsNm;
               enterpriseScoreInfo.financialStatementDebtRatioScore =
                 BatchCalculator.getFinancialStatementDebtRatioScore(
                   enterpriseCategoryInfo.financialStatementDebtRatio,
@@ -722,6 +730,57 @@ export class BatchService implements OnApplicationBootstrap {
               enterpriseScoreInfo.roaScore = BatchCalculator.getRoaScore(
                 enterpriseCategoryInfo.roa,
               );
+              enterpriseScoreInfo.roeScore = BatchCalculator.getRoeScore(
+                enterpriseCategoryInfo.roe,
+              );
+              enterpriseScoreInfo.pbrScore = BatchCalculator.getPbrScore(
+                enterpriseCategoryInfo.pbr,
+              );
+              enterpriseScoreInfo.perScore = BatchCalculator.getPerScore(
+                enterpriseCategoryInfo.per,
+              );
+              enterpriseScoreInfo.salesGrowthRateScore =
+                BatchCalculator.getSalesGrowthRateScore(
+                  enterpriseCategoryInfo.salesGrowthRate,
+                );
+              enterpriseScoreInfo.incomeBeforeTaxExpenseDiffScore =
+                BatchCalculator.getIncomeBeforeTaxExpenseDiff(
+                  enterpriseCategoryInfo.incomeBeforeTaxExpenseDiff,
+                );
+              enterpriseScoreInfo.moveAverageScore =
+                BatchCalculator.getMoveAverageScore(
+                  enterpriseCategoryInfo.moveAverage,
+                );
+              enterpriseScoreInfo.volumeScore = BatchCalculator.getVolumeScore(
+                enterpriseCategoryInfo.volume,
+              );
+              enterpriseScoreInfo.changeMarketGapScore =
+                BatchCalculator.getChangeMarketGapScore(
+                  enterpriseCategoryInfo.changeMarketGap,
+                );
+              enterpriseScoreInfo.volumeRatioScore =
+                BatchCalculator.getVolumeRatioScore(
+                  enterpriseCategoryInfo.volumeRatio,
+                );
+              enterpriseScoreInfo.totalScore =
+                enterpriseScoreInfo.pbrScore +
+                enterpriseScoreInfo.perScore +
+                enterpriseScoreInfo.salesGrowthRateScore +
+                enterpriseScoreInfo.incomeBeforeTaxExpenseDiffScore +
+                enterpriseScoreInfo.financialStatementDebtRatioScore +
+                enterpriseScoreInfo.roeScore +
+                enterpriseScoreInfo.roaScore +
+                enterpriseScoreInfo.moveAverageScore +
+                enterpriseScoreInfo.volumeScore +
+                enterpriseScoreInfo.changeMarketGapScore +
+                enterpriseScoreInfo.volumeRatioScore;
+              enterpriseScoreInfo.rating = BatchCalculator.getRating(
+                enterpriseScoreInfo.totalScore,
+              );
+
+              await manager.upsert(SpoEnterpriseScore, enterpriseScoreInfo, [
+                'enterpriseScoreSequence',
+              ]);
             }
           }
         }
