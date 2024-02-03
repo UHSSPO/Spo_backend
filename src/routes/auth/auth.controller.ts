@@ -10,7 +10,7 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDto, KakaoLoginDto, LoginDto } from './dto/req.dto';
 import { KakaoLoginResDto, LoginResDto } from './dto/res.dto';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SpoUser } from '../../entity/spo_user.entity';
 import { LocalAuthGuard } from '../../auth/local-auth.guard';
 @ApiTags('Auth')
@@ -23,6 +23,9 @@ export class AuthController {
     status: 200,
     description: 'Success',
     type: KakaoLoginResDto,
+  })
+  @ApiOperation({
+    summary: '카카오 정보 호출 api',
   })
   async getKakaoInfo(
     @Body() reqBody: KakaoLoginDto,
@@ -41,6 +44,9 @@ export class AuthController {
     description: 'Success',
     type: SpoUser,
   })
+  @ApiOperation({
+    summary: '회원가입 api',
+  })
   singUp(@Body() reqBody: CreateUserDto): Promise<SpoUser> {
     return this.authService.signUp(reqBody);
   }
@@ -52,6 +58,9 @@ export class AuthController {
     status: 200,
     description: 'Success',
     type: LoginResDto,
+  })
+  @ApiOperation({
+    summary: '로그인 api',
   })
   @ApiBody({ type: LoginDto })
   async login(@Request() req): Promise<LoginResDto> {

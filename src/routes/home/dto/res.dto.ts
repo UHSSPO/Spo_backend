@@ -36,3 +36,47 @@ export class MarketIndexResDto {
   })
   fltRt: number;
 }
+
+export class RecommendStockInfo {
+  @ApiProperty({
+    example: 1,
+    description: '주식상장정보 일련번호',
+    required: true,
+  })
+  stockInfoSequence: number;
+
+  @ApiProperty({
+    example: '현대차',
+    description: '주식명',
+    required: true,
+  })
+  itmsNm: string;
+
+  @ApiProperty({
+    example: 19032,
+    description: '종가',
+    required: true,
+  })
+  clpr: number;
+
+  @ApiProperty({
+    example: 1.2,
+    description: '등락률',
+    required: true,
+  })
+  fltRt: number;
+
+  @ApiProperty({
+    example: 123113,
+    description: '거래량',
+    required: true,
+  })
+  trqu: number;
+
+  @ApiProperty({
+    example: 5423423123,
+    description: '시가총액',
+    required: true,
+  })
+  mrktTotAmt: number;
+}
