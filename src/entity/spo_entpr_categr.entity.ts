@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -11,6 +12,7 @@ import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
 import { SpoStockInfo } from './spo_stock_info.entity';
 
 @Entity({ name: 'SPO_ENTPR_CATEGR' })
+@Index('idx_itmsNm', ['itmsNm'], { unique: true })
 export class SpoEnterpriseCategory {
   @PrimaryGeneratedColumn({ name: 'ENTPR_CATEGO_SEQ' })
   @ApiProperty({ description: '기업 평가 항목 일련번호', example: 11 })

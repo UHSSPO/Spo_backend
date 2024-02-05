@@ -43,8 +43,8 @@ export class BatchService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
-      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-    // this.shouldRunBatch = true;
+      // process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+      this.shouldRunBatch = true;
   }
 
   // 상장종목정보
@@ -390,7 +390,7 @@ export class BatchService implements OnApplicationBootstrap {
             'RESULT_TYPE',
           )}&pageNo=${this.configService.get<string>(
             'PAGE_NO',
-          )}&numOfRows=200000&beginMrktTotAmt=500000000000`,
+          )}&numOfRows=200000`,
         );
         this.stockPrice15thInfoResData =
           stockPrice15thInfoRes.data?.response?.body?.items?.item;
@@ -686,19 +686,23 @@ export class BatchService implements OnApplicationBootstrap {
                   ).toFixed(2),
                 ); // (거래대금 / 시총) * 100
 
-                await manager.update(
-                  SpoStockInfo,
-                  { srtnCd: stockInfo.srtnCd },
-                  { badData: 'N' },
-                );
+                if (stockInfo.badData === 'Y') {
+                  await manager.update(
+                    SpoStockInfo,
+                    { srtnCd: stockInfo.srtnCd },
+                    { badData: 'N' },
+                  );
+                }
                 await manager.upsert(
                   SpoEnterpriseCategory,
                   enterpriseCategoryInfo,
-                  ['enterpriseCategorySequence'],
+                  ['itmsNm'],
                 );
               }
             }
           }
+          this.logger.log(`Success updateEnterpriseCategory Update`);
+          await this.updateEnterpriseScore();
         }
       });
     }
@@ -783,6 +787,7 @@ export class BatchService implements OnApplicationBootstrap {
               ]);
             }
           }
+          this.logger.log(`Success updateEnterpriseScore Update`);
         }
       });
     }
