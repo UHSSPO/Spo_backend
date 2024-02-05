@@ -80,6 +80,7 @@ export class HomeController {
   @ApiResponse({
     status: 200,
     description: 'Success',
+    type: UpdateInterestStock,
   })
   @ApiOperation({
     summary: '관심주식 등록',
