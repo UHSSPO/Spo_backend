@@ -1,7 +1,22 @@
-import { Controller, Get } from '@nestjs/common';
-import { MarketIndexResDto, RecommendStockInfo } from './dto/res.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import {
+  MarketIndexResDto,
+  RecommendStockInfo,
+  UpdateInterestStock,
+} from './dto/res.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HomeService } from './home.service';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { InterestRequestDto } from './dto/req.dto';
+import { LocalAuthGuard } from '../../auth/local-auth.guard';
+import { JwtAllGuard } from '../../auth/jwt-all.guard';
 
 @ApiTags('Home')
 @Controller('home')
@@ -21,6 +36,7 @@ export class HomeController {
   }
 
   @Get('/short-investment-recommend')
+  @UseGuards(JwtAllGuard)
   @ApiResponse({
     status: 200,
     description: 'Success',
@@ -29,11 +45,12 @@ export class HomeController {
   @ApiOperation({
     summary: '단기투자 추천 종목 api',
   })
-  async getShortInvestRecommend(): Promise<RecommendStockInfo[]> {
-    return await this.homeService.getShortInvestRecommend();
+  async getShortInvestRecommend(@Request() req): Promise<RecommendStockInfo[]> {
+    return await this.homeService.getShortInvestRecommend(req.user);
   }
 
   @Get('/long-investment-recommend')
+  @UseGuards(JwtAllGuard)
   @ApiResponse({
     status: 200,
     description: 'Success',
@@ -42,8 +59,8 @@ export class HomeController {
   @ApiOperation({
     summary: '장기투자 추천 종목 api',
   })
-  async getLongInvestRecommend(): Promise<RecommendStockInfo[]> {
-    return await this.homeService.getLongInvestRecommend();
+  async getLongInvestRecommend(@Request() req): Promise<RecommendStockInfo[]> {
+    return await this.homeService.getLongInvestRecommend(req.user);
   }
   @Get('/popular-stock')
   @ApiResponse({
@@ -56,5 +73,21 @@ export class HomeController {
   })
   async getPopularStockInfo(): Promise<RecommendStockInfo[]> {
     return await this.homeService.getPopularStockInfo();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/interest')
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+  })
+  @ApiOperation({
+    summary: '관심주식 등록',
+  })
+  async updateInterestStock(
+    @Body() reqBody: InterestRequestDto,
+    @Request() req,
+  ): Promise<UpdateInterestStock> {
+    return this.homeService.updateInterestStock(reqBody, req);
   }
 }

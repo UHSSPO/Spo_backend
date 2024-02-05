@@ -80,3 +80,12 @@ export class RecommendStockInfo {
   })
   mrktTotAmt: number;
 }
+
+export class UpdateInterestStock {
+  @ApiProperty({
+    example: 'Y',
+    description: '관심주식 여부',
+    required: true,
+  })
+  interestStockYn: string;
+}

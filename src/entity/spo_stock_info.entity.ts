@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   Index,
+  ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -14,6 +15,7 @@ import { SpoStockPriceInfo } from './spo_stock_price_info.entity';
 import { SpoStockPrice15thInfo } from './spo_stock_price_15th_info.entity';
 import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
 import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
+import { SpoUser } from './spo_user.entity';
 
 @Entity({ name: 'SPO_STK_INFO' })
 @Index('idx_crno', ['crno'], { unique: true })
@@ -88,4 +90,7 @@ export class SpoStockInfo {
     (enterScoreInfo) => enterScoreInfo.stockInfo,
   )
   enterpriseScores: SpoEnterpriseScore;
+
+  @ManyToMany(() => SpoUser, (user) => user.stockInfo)
+  user: SpoUser[];
 }
