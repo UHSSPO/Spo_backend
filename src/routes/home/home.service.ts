@@ -118,7 +118,7 @@ export class HomeService {
         .innerJoin(SpoStockInfo, 'SSI', 'SSPI.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
         .where('SSI.TRAD_SUSPD_YN = :tradeSuspendYn', { tradeSuspendYn: 'N' })
         .orderBy('SSPI.TRQU', 'DESC')
-        .limit(5)
+        .limit(6)
         .getRawMany();
 
     return popularStockResult;
