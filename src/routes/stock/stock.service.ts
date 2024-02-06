@@ -14,7 +14,7 @@ import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoInterestStock } from '../../entity/spo_interest_stock.entity';
 
 @Injectable()
-export class HomeService {
+export class StockService {
   constructor(
     @InjectRepository(SpoMarketIndex)
     private marketIndexRepository: Repository<SpoMarketIndex>,

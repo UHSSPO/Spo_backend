@@ -6,6 +6,12 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('batch')
 export class BatchController {
   constructor(private batchService: BatchService) {}
+
+  @Get('/view-init')
+  viewInitTask() {
+    return this.batchService.viewInitTask();
+  }
+
   @Get('/stock')
   stockBatchTask() {
     return this.batchService.stockBatchTask();

@@ -16,6 +16,8 @@ import { SpoStockPrice15thInfo } from './spo_stock_price_15th_info.entity';
 import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
 import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
 import { SpoUser } from './spo_user.entity';
+import { SpoInterestStock } from './spo_interest_stock.entity';
+import { SpoStockView } from './spo_stock_view.entity';
 
 @Entity({ name: 'SPO_STK_INFO' })
 @Index('idx_crno', ['crno'], { unique: true })
@@ -91,6 +93,9 @@ export class SpoStockInfo {
   )
   enterpriseScores: SpoEnterpriseScore;
 
-  @ManyToMany(() => SpoUser, (user) => user.stockInfo)
-  user: SpoUser[];
+  @OneToMany(() => SpoInterestStock, (interestStock) => interestStock.stockInfo)
+  interestStock: SpoInterestStock[];
+
+  @OneToOne(() => SpoStockView, (stockView) => stockView.stockInfo)
+  stockView: SpoStockView;
 }

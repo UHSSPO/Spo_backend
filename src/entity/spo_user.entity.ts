@@ -2,13 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
-import { SpoStockInfo } from './spo_stock_info.entity';
+import { SpoInterestStock } from './spo_interest_stock.entity';
 
 @Entity({ name: 'SPO_USR' })
 export class SpoUser {
@@ -56,6 +55,6 @@ export class SpoUser {
   @ApiProperty({ description: '생년월일', example: '000525' })
   dateOfBirth: string;
 
-  @OneToOne(() => SpoStockInfo, (stockInfo) => stockInfo.user)
-  stockInfo: SpoStockInfo[];
+  @OneToMany(() => SpoInterestStock, (interestStock) => interestStock.user)
+  interestStock: SpoInterestStock[];
 }

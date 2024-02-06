@@ -23,6 +23,7 @@ import { SpoMarketIndex } from '../../entity/spo_market_index.entity';
 import { SpoEnterpriseCategory } from '../../entity/spo_entpr_categr.entity';
 import { SpoEnterpriseScore } from '../../entity/spo_entpr_scor.entity';
 import { BatchCalculator } from '../../common/util/batch/BatchCalculator';
+import { SpoStockView } from '../../entity/spo_stock_view.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -43,8 +44,25 @@ export class BatchService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
-      // process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-      this.shouldRunBatch = true;
+      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+    // this.shouldRunBatch = true;
+  }
+  // 조회수 초기화
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT) // 매일 24시 실행
+  async viewInitTask() {
+    if (this.shouldRunBatch) {
+      await this.dataSource.transaction(async (manager) => {
+        const stockInfos = await manager.find(SpoStockInfo);
+        for (const stockInfo of stockInfos) {
+          const stockView = new SpoStockView();
+          stockView.stockInfo = stockInfo;
+          stockView.stockInfoSequence = stockInfo.stockInfoSequence;
+          stockView.view = 0;
+
+          await manager.upsert(SpoStockView, stockView, ['stockViewSequence']);
+        }
+      });
+    }
   }
 
   // 상장종목정보
@@ -525,9 +543,9 @@ export class BatchService implements OnApplicationBootstrap {
                 ]);
               }
             }
-            this.logger.log(`Success SpoMarketIndex Update ${basDt}`);
-            await this.updateEnterpriseCategory();
           });
+          this.logger.log(`Success SpoMarketIndex Update ${basDt}`);
+          await this.updateEnterpriseCategory();
         } else {
           this.logger.log(
             'Undefined Response from getStockPriceInfo API',
@@ -701,10 +719,10 @@ export class BatchService implements OnApplicationBootstrap {
               }
             }
           }
-          this.logger.log(`Success updateEnterpriseCategory Update`);
-          await this.updateEnterpriseScore();
         }
       });
+      this.logger.log(`Success updateEnterpriseCategory Update`);
+      await this.updateEnterpriseScore();
     }
   }
 
@@ -787,9 +805,9 @@ export class BatchService implements OnApplicationBootstrap {
               ]);
             }
           }
-          this.logger.log(`Success updateEnterpriseScore Update`);
         }
       });
+      this.logger.log(`Success updateEnterpriseScore Update`);
     }
   }
 }

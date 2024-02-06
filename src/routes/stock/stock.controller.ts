@@ -12,16 +12,15 @@ import {
   UpdateInterestStock,
 } from './dto/res.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { HomeService } from './home.service';
+import { StockService } from './stock.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { InterestRequestDto } from './dto/req.dto';
-import { LocalAuthGuard } from '../../auth/local-auth.guard';
 import { JwtAllGuard } from '../../auth/jwt-all.guard';
 
-@ApiTags('Home')
-@Controller('home')
-export class HomeController {
-  constructor(private homeService: HomeService) {}
+@ApiTags('stock')
+@Controller('stock')
+export class StockController {
+  constructor(private stockService: StockService) {}
   @Get('/market-index')
   @ApiResponse({
     status: 200,
@@ -32,10 +31,10 @@ export class HomeController {
     summary: '지수정보 api',
   })
   async getHomeMarketIndex(): Promise<MarketIndexResDto[]> {
-    return await this.homeService.getHomeMarketIndex();
+    return await this.stockService.getHomeMarketIndex();
   }
 
-  @Get('/short-investment-recommend')
+  @Get('/recommend/short-investment')
   @UseGuards(JwtAllGuard)
   @ApiResponse({
     status: 200,
@@ -46,10 +45,10 @@ export class HomeController {
     summary: '단기투자 추천 종목 api',
   })
   async getShortInvestRecommend(@Request() req): Promise<RecommendStockInfo[]> {
-    return await this.homeService.getShortInvestRecommend(req.user);
+    return await this.stockService.getShortInvestRecommend(req.user);
   }
 
-  @Get('/long-investment-recommend')
+  @Get('/recommend/long-investment')
   @UseGuards(JwtAllGuard)
   @ApiResponse({
     status: 200,
@@ -60,9 +59,9 @@ export class HomeController {
     summary: '장기투자 추천 종목 api',
   })
   async getLongInvestRecommend(@Request() req): Promise<RecommendStockInfo[]> {
-    return await this.homeService.getLongInvestRecommend(req.user);
+    return await this.stockService.getLongInvestRecommend(req.user);
   }
-  @Get('/popular-stock')
+  @Get('/popular')
   @ApiResponse({
     status: 200,
     description: 'Success',
@@ -72,7 +71,7 @@ export class HomeController {
     summary: '인기종목 api',
   })
   async getPopularStockInfo(): Promise<RecommendStockInfo[]> {
-    return await this.homeService.getPopularStockInfo();
+    return await this.stockService.getPopularStockInfo();
   }
 
   @UseGuards(JwtAuthGuard)
@@ -89,6 +88,6 @@ export class HomeController {
     @Body() reqBody: InterestRequestDto,
     @Request() req,
   ): Promise<UpdateInterestStock> {
-    return this.homeService.updateInterestStock(reqBody, req);
+    return this.stockService.updateInterestStock(reqBody, req);
   }
 }

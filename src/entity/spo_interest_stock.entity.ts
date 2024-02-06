@@ -2,11 +2,10 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
 import { SpoStockInfo } from './spo_stock_info.entity';
 import { SpoUser } from './spo_user.entity';
 
@@ -24,14 +23,14 @@ export class SpoInterestStock {
   @ApiProperty({ description: '유저일련번호', example: 11 })
   userSequence: number;
 
-  @ManyToMany(() => SpoStockInfo, (stockInfo) => stockInfo.stockInfoSequence)
+  @ManyToOne(() => SpoStockInfo, (stockInfo) => stockInfo.stockInfoSequence)
   @JoinColumn({
     name: 'STK_INFO_SEQ',
     referencedColumnName: 'stockInfoSequence',
   })
-  enterpriseCategory: SpoEnterpriseCategory;
+  stockInfo: SpoStockInfo;
 
-  @ManyToMany(() => SpoUser, (user) => user.userSequence)
+  @ManyToOne(() => SpoUser, (user) => user.userSequence)
   @JoinColumn({
     name: 'USR_SEQ',
     referencedColumnName: 'userSequence',
