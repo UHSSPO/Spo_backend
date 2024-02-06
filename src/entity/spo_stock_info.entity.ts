@@ -2,7 +2,6 @@ import {
   Column,
   Entity,
   Index,
-  ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -15,7 +14,6 @@ import { SpoStockPriceInfo } from './spo_stock_price_info.entity';
 import { SpoStockPrice15thInfo } from './spo_stock_price_15th_info.entity';
 import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
 import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
-import { SpoUser } from './spo_user.entity';
 import { SpoInterestStock } from './spo_interest_stock.entity';
 import { SpoStockView } from './spo_stock_view.entity';
 
@@ -66,14 +64,17 @@ export class SpoStockInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
+  @ApiProperty({ description: '재무제표 정보', type: SpoSummFinaInfo })
   @OneToOne(() => SpoSummFinaInfo, (finaInfo) => finaInfo.stockInfo)
   summFinaInfo: SpoSummFinaInfo;
 
+  @ApiProperty({ description: '손익계산서 정보', type: SpoIncoInfo })
   @OneToMany(() => SpoIncoInfo, (incoInfo) => incoInfo.stockInfo)
   incoInfo: SpoIncoInfo[];
 
-  @OneToOne(() => SpoStockPriceInfo, (prcInfo) => prcInfo.stockInfo)
-  prcInfo: SpoStockPriceInfo;
+  @ApiProperty({ description: '주식 가격 정보', type: SpoStockPriceInfo })
+  @OneToOne(() => SpoStockPriceInfo, (priceInfo) => priceInfo.stockInfo)
+  priceInfo: SpoStockPriceInfo;
 
   @OneToMany(
     () => SpoStockPrice15thInfo,
@@ -81,6 +82,10 @@ export class SpoStockInfo {
   )
   prc15tnMonInfo: SpoStockPriceInfo[];
 
+  @ApiProperty({
+    description: '기업평가항목 정보',
+    type: SpoEnterpriseCategory,
+  })
   @OneToOne(
     () => SpoEnterpriseCategory,
     (enterCateInfo) => enterCateInfo.stockInfo,

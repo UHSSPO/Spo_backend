@@ -12,16 +12,48 @@ import { SpoEnterpriseCategory } from '../../entity/spo_entpr_categr.entity';
 import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
 import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoInterestStock } from '../../entity/spo_interest_stock.entity';
+import { SpoStockView } from '../../entity/spo_stock_view.entity';
 
 @Injectable()
 export class StockService {
   constructor(
     @InjectRepository(SpoMarketIndex)
     private marketIndexRepository: Repository<SpoMarketIndex>,
+
+    @InjectRepository(SpoStockInfo)
+    private stockInfoRepository: Repository<SpoStockInfo>,
+
     @InjectRepository(SpoStockPriceInfo)
     private stockPriceInfoRepository: Repository<SpoStockPriceInfo>,
+
     private dataSource: DataSource,
   ) {}
+  async getStockInfo(stockInfoSequence: number): Promise<SpoStockInfo> {
+    const stockInfo = await this.stockInfoRepository
+      .createQueryBuilder('SSI')
+      .leftJoinAndSelect('SSI.priceInfo', 'stockPriceInfo')
+      .leftJoinAndSelect('SSI.summFinaInfo', 'summFinaInfo')
+      .leftJoinAndSelect('SSI.incoInfo', 'incoInfo')
+      .leftJoinAndSelect('SSI.enterpriseCategories', 'enterpriseCategories')
+      .where('SSI.stockInfoSequence = :stockInfoSequence', {
+        stockInfoSequence,
+      })
+      .getOne();
+    await this.dataSource.transaction(async (manager) => {
+      const stockView = await manager.findOne(SpoStockView, {
+        where: { stockInfoSequence: stockInfoSequence },
+      });
+
+      await manager.update(
+        SpoStockView,
+        { stockInfoSequence: stockInfoSequence },
+        { view: stockView.view + 1 },
+      );
+    });
+
+    return stockInfo;
+  }
+
   async getHomeMarketIndex(): Promise<MarketIndexResDto[]> {
     return await this.marketIndexRepository.find();
   }

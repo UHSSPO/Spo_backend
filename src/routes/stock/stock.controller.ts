@@ -5,6 +5,9 @@ import {
   Post,
   UseGuards,
   Request,
+  Param,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import {
   MarketIndexResDto,
@@ -16,11 +19,13 @@ import { StockService } from './stock.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { InterestRequestDto } from './dto/req.dto';
 import { JwtAllGuard } from '../../auth/jwt-all.guard';
+import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 
 @ApiTags('stock')
 @Controller('stock')
 export class StockController {
   constructor(private stockService: StockService) {}
+
   @Get('/market-index')
   @ApiResponse({
     status: 200,
@@ -32,6 +37,23 @@ export class StockController {
   })
   async getHomeMarketIndex(): Promise<MarketIndexResDto[]> {
     return await this.stockService.getHomeMarketIndex();
+  }
+
+  @Get(':stockInfoSequence')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: SpoStockInfo,
+  })
+  @ApiOperation({
+    summary: '주식 상세 api',
+  })
+  async getStockInfo(
+    @Param('stockInfoSequence') stockInfoSequence: number,
+  ): Promise<SpoStockInfo> {
+    return this.stockService.getStockInfo(stockInfoSequence);
   }
 
   @Get('/recommend/short-investment')
@@ -61,6 +83,7 @@ export class StockController {
   async getLongInvestRecommend(@Request() req): Promise<RecommendStockInfo[]> {
     return await this.stockService.getLongInvestRecommend(req.user);
   }
+
   @Get('/popular')
   @ApiResponse({
     status: 200,
@@ -74,8 +97,8 @@ export class StockController {
     return await this.stockService.getPopularStockInfo();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('/interest')
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 200,
     description: 'Success',
