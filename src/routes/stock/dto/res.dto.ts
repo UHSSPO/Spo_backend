@@ -89,3 +89,53 @@ export class UpdateInterestStock {
   })
   interestStockYn: string;
 }
+
+export class ThemeStockInfo {
+  @ApiProperty({
+    example: [
+      {
+        stockInfoSequence: 1,
+        itmsNm: '현대차',
+        clpr: 19032,
+        fltRt: 1.2,
+        trqu: 123113,
+        mrktTotAmt: 5423423123,
+      },
+    ],
+    description: '조회수 높은순',
+    required: true,
+  })
+  highViews: RecommendStockInfo[];
+
+  @ApiProperty({
+    example: [
+      {
+        stockInfoSequence: 1,
+        itmsNm: '현대차',
+        clpr: 19032,
+        fltRt: 1.2,
+        trqu: 123113,
+        mrktTotAmt: 5423423123,
+      },
+    ],
+    description: '상승률 높은순',
+    required: true,
+  })
+  increaseStock: RecommendStockInfo[];
+
+  @ApiProperty({
+    example: [
+      {
+        stockInfoSequence: 1,
+        itmsNm: '현대차',
+        clpr: 19032,
+        fltRt: 1.2,
+        trqu: 123113,
+        mrktTotAmt: 5423423123,
+      },
+    ],
+    description: '하락률 높은순',
+    required: true,
+  })
+  declineStock: RecommendStockInfo[];
+}

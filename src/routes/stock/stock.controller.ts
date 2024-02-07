@@ -12,6 +12,7 @@ import {
 import {
   MarketIndexResDto,
   RecommendStockInfo,
+  ThemeStockInfo,
   UpdateInterestStock,
 } from './dto/res.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -37,6 +38,32 @@ export class StockController {
   })
   async getHomeMarketIndex(): Promise<MarketIndexResDto[]> {
     return await this.stockService.getHomeMarketIndex();
+  }
+
+  @Get('/theme')
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: ThemeStockInfo,
+  })
+  @ApiOperation({
+    summary: '테마별 탐색 api',
+  })
+  async getThemeStockInfo(): Promise<ThemeStockInfo> {
+    return await this.stockService.getThemeStockInfo();
+  }
+
+  @Get('/popular')
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: RecommendStockInfo,
+  })
+  @ApiOperation({
+    summary: '인기종목 api',
+  })
+  async getPopularStockInfo(): Promise<RecommendStockInfo[]> {
+    return await this.stockService.getPopularStockInfo();
   }
 
   @Get(':stockInfoSequence')
@@ -82,19 +109,6 @@ export class StockController {
   })
   async getLongInvestRecommend(@Request() req): Promise<RecommendStockInfo[]> {
     return await this.stockService.getLongInvestRecommend(req.user);
-  }
-
-  @Get('/popular')
-  @ApiResponse({
-    status: 200,
-    description: 'Success',
-    type: RecommendStockInfo,
-  })
-  @ApiOperation({
-    summary: '인기종목 api',
-  })
-  async getPopularStockInfo(): Promise<RecommendStockInfo[]> {
-    return await this.stockService.getPopularStockInfo();
   }
 
   @Post('/interest')

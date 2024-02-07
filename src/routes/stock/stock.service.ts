@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   MarketIndexResDto,
   RecommendStockInfo,
+  ThemeStockInfo,
   UpdateInterestStock,
 } from './dto/res.dto';
 import { DataSource, Repository } from 'typeorm';
@@ -13,6 +14,7 @@ import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
 import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoInterestStock } from '../../entity/spo_interest_stock.entity';
 import { SpoStockView } from '../../entity/spo_stock_view.entity';
+import { orderBy } from 'lodash';
 
 @Injectable()
 export class StockService {
@@ -180,5 +182,74 @@ export class StockService {
       }
     });
     return { interestStockYn: interestStockYn };
+  }
+
+  async getThemeStockInfo(): Promise<ThemeStockInfo> {
+    const highViews: RecommendStockInfo[] = await this.stockInfoRepository
+      .createQueryBuilder('SSI')
+      .select([
+        'SSI.STK_INFO_SEQ as stockInfoSequence',
+        'SSI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+      ])
+      .innerJoin(
+        SpoStockPriceInfo,
+        'SSPI',
+        'SSI.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
+      )
+      .innerJoin(SpoStockView, 'SSV', 'SSI.STK_INFO_SEQ = SSV.STK_INFO_SEQ')
+      .where('SSI.TRAD_SUSPD_YN = :tradeSuspendYn', { tradeSuspendYn: 'N' })
+      .orderBy('SSV.VIEW', 'DESC')
+      .limit(5)
+      .getRawMany();
+
+    const increaseStock: RecommendStockInfo[] = await this.stockInfoRepository
+      .createQueryBuilder('SSI')
+      .select([
+        'SSI.STK_INFO_SEQ as stockInfoSequence',
+        'SSI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+      ])
+      .innerJoin(
+        SpoStockPriceInfo,
+        'SSPI',
+        'SSI.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
+      )
+      .where('SSI.TRAD_SUSPD_YN = :tradeSuspendYn', { tradeSuspendYn: 'N' })
+      .orderBy('SSPI.FLT_RT', 'DESC')
+      .limit(5)
+      .getRawMany();
+
+    const declineStock: RecommendStockInfo[] = await this.stockInfoRepository
+      .createQueryBuilder('SSI')
+      .select([
+        'SSI.STK_INFO_SEQ as stockInfoSequence',
+        'SSI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+      ])
+      .innerJoin(
+        SpoStockPriceInfo,
+        'SSPI',
+        'SSI.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
+      )
+      .where('SSI.TRAD_SUSPD_YN = :tradeSuspendYn', { tradeSuspendYn: 'N' })
+      .orderBy('SSPI.FLT_RT', 'ASC')
+      .limit(5)
+      .getRawMany();
+
+    return {
+      highViews: highViews,
+      increaseStock: increaseStock,
+      declineStock: declineStock,
+    };
   }
 }
