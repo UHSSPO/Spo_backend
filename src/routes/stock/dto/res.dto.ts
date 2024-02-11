@@ -37,7 +37,7 @@ export class MarketIndexResDto {
   fltRt: number;
 }
 
-export class RecommendStockInfo {
+export class HomeStockInfo {
   @ApiProperty({
     example: 1,
     description: '주식상장정보 일련번호',
@@ -105,7 +105,7 @@ export class ThemeStockInfo {
     description: '조회수 높은순',
     required: true,
   })
-  highViews: RecommendStockInfo[];
+  highViews: HomeStockInfo[];
 
   @ApiProperty({
     example: [
@@ -121,7 +121,7 @@ export class ThemeStockInfo {
     description: '상승률 높은순',
     required: true,
   })
-  increaseStock: RecommendStockInfo[];
+  increaseStock: HomeStockInfo[];
 
   @ApiProperty({
     example: [
@@ -137,5 +137,5 @@ export class ThemeStockInfo {
     description: '하락률 높은순',
     required: true,
   })
-  declineStock: RecommendStockInfo[];
+  declineStock: HomeStockInfo[];
 }

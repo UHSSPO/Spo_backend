@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   MarketIndexResDto,
-  RecommendStockInfo,
+  HomeStockInfo,
   ThemeStockInfo,
   UpdateInterestStock,
 } from './dto/res.dto';
@@ -57,12 +57,12 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: RecommendStockInfo,
+    type: HomeStockInfo,
   })
   @ApiOperation({
     summary: '인기종목 api',
   })
-  async getPopularStockInfo(): Promise<RecommendStockInfo[]> {
+  async getPopularStockInfo(): Promise<HomeStockInfo[]> {
     return await this.stockService.getPopularStockInfo();
   }
 
@@ -88,12 +88,12 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: RecommendStockInfo,
+    type: HomeStockInfo,
   })
   @ApiOperation({
     summary: '단기투자 추천 종목 api',
   })
-  async getShortInvestRecommend(@Request() req): Promise<RecommendStockInfo[]> {
+  async getShortInvestRecommend(@Request() req): Promise<HomeStockInfo[]> {
     return await this.stockService.getShortInvestRecommend(req.user);
   }
 
@@ -102,13 +102,27 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: RecommendStockInfo,
+    type: HomeStockInfo,
   })
   @ApiOperation({
     summary: '장기투자 추천 종목 api',
   })
-  async getLongInvestRecommend(@Request() req): Promise<RecommendStockInfo[]> {
+  async getLongInvestRecommend(@Request() req): Promise<HomeStockInfo[]> {
     return await this.stockService.getLongInvestRecommend(req.user);
+  }
+
+  @Get('/my/interest')
+  @UseGuards(JwtAllGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: HomeStockInfo,
+  })
+  @ApiOperation({
+    summary: '내 관심 주식 api',
+  })
+  async getMyInterestStock(@Request() req): Promise<HomeStockInfo[]> {
+    return await this.stockService.getMyInterestStock(req.user);
   }
 
   @Post('/interest')
@@ -125,6 +139,6 @@ export class StockController {
     @Body() reqBody: InterestRequestDto,
     @Request() req,
   ): Promise<UpdateInterestStock> {
-    return this.stockService.updateInterestStock(reqBody, req);
+    return this.stockService.updateInterestStock(reqBody, req.user);
   }
 }

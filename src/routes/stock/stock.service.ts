@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   MarketIndexResDto,
-  RecommendStockInfo,
+  HomeStockInfo,
   ThemeStockInfo,
   UpdateInterestStock,
 } from './dto/res.dto';
@@ -14,7 +14,7 @@ import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
 import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoInterestStock } from '../../entity/spo_interest_stock.entity';
 import { SpoStockView } from '../../entity/spo_stock_view.entity';
-import { orderBy } from 'lodash';
+import { IUserInterface } from '../../common/interface/user.interface';
 
 @Injectable()
 export class StockService {
@@ -60,9 +60,9 @@ export class StockService {
     return await this.marketIndexRepository.find();
   }
 
-  async getShortInvestRecommend(user): Promise<RecommendStockInfo[]> {
+  async getShortInvestRecommend(user): Promise<HomeStockInfo[]> {
     const userSeq = user ? user.userSequence : 0;
-    const shortInvestResult: RecommendStockInfo[] =
+    const shortInvestResult: HomeStockInfo[] =
       await this.stockPriceInfoRepository
         .createQueryBuilder('SSPI')
         .select([
@@ -95,9 +95,9 @@ export class StockService {
     return shortInvestResult;
   }
 
-  async getLongInvestRecommend(user): Promise<RecommendStockInfo[]> {
+  async getLongInvestRecommend(user: IUserInterface): Promise<HomeStockInfo[]> {
     const userSeq = user ? user.userSequence : 0;
-    const longInvestResult: RecommendStockInfo[] =
+    const longInvestResult: HomeStockInfo[] =
       await this.stockPriceInfoRepository
         .createQueryBuilder('SSPI')
         .select([
@@ -137,8 +137,8 @@ export class StockService {
     return longInvestResult;
   }
 
-  async getPopularStockInfo(): Promise<RecommendStockInfo[]> {
-    const popularStockResult: RecommendStockInfo[] =
+  async getPopularStockInfo(): Promise<HomeStockInfo[]> {
+    const popularStockResult: HomeStockInfo[] =
       await this.stockPriceInfoRepository
         .createQueryBuilder('SSPI')
         .select([
@@ -158,14 +158,17 @@ export class StockService {
     return popularStockResult;
   }
 
-  async updateInterestStock(reqBody, req): Promise<UpdateInterestStock> {
+  async updateInterestStock(
+    reqBody,
+    user: IUserInterface,
+  ): Promise<UpdateInterestStock> {
     let interestStockYn = 'N';
     await this.dataSource.transaction(async (mangaer) => {
       const interestStock = new SpoInterestStock();
       const findInterestStock = await mangaer.findOne(SpoInterestStock, {
         where: {
           stockInfoSequence: reqBody.stockInfoSequence,
-          userSequence: req.user.userSequence,
+          userSequence: user.userSequence,
         },
       });
       if (findInterestStock) {
@@ -176,7 +179,7 @@ export class StockService {
         interestStockYn = 'N';
       } else {
         interestStock.stockInfoSequence = reqBody.stockInfoSequence;
-        interestStock.userSequence = req.user.userSequence;
+        interestStock.userSequence = user.userSequence;
         await mangaer.save(SpoInterestStock, interestStock);
         interestStockYn = 'Y';
       }
@@ -184,8 +187,30 @@ export class StockService {
     return { interestStockYn: interestStockYn };
   }
 
+  async getMyInterestStock(user: IUserInterface): Promise<HomeStockInfo[]> {
+    const userSeq = user ? user.userSequence : 0;
+    const myInterestStock: HomeStockInfo[] = await this.stockPriceInfoRepository
+      .createQueryBuilder('SSPI')
+      .select([
+        'SSPI.STK_INFO_SEQ as stockInfoSequence',
+        'SSPI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+      ])
+      .innerJoin(SpoStockInfo, 'SSI', 'SSPI.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
+      .innerJoin(SpoInterestStock, 'SIS', 'SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
+      .where(`SIS.USR_SEQ = ${userSeq}`)
+      .orderBy('SIS.UPDT_AT', 'ASC')
+      .limit(5)
+      .getRawMany();
+
+    return myInterestStock;
+  }
+
   async getThemeStockInfo(): Promise<ThemeStockInfo> {
-    const highViews: RecommendStockInfo[] = await this.stockInfoRepository
+    const highViews: HomeStockInfo[] = await this.stockInfoRepository
       .createQueryBuilder('SSI')
       .select([
         'SSI.STK_INFO_SEQ as stockInfoSequence',
@@ -206,7 +231,7 @@ export class StockService {
       .limit(5)
       .getRawMany();
 
-    const increaseStock: RecommendStockInfo[] = await this.stockInfoRepository
+    const increaseStock: HomeStockInfo[] = await this.stockInfoRepository
       .createQueryBuilder('SSI')
       .select([
         'SSI.STK_INFO_SEQ as stockInfoSequence',
@@ -226,7 +251,7 @@ export class StockService {
       .limit(5)
       .getRawMany();
 
-    const declineStock: RecommendStockInfo[] = await this.stockInfoRepository
+    const declineStock: HomeStockInfo[] = await this.stockInfoRepository
       .createQueryBuilder('SSI')
       .select([
         'SSI.STK_INFO_SEQ as stockInfoSequence',

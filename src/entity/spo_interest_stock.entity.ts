@@ -4,6 +4,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { SpoStockInfo } from './spo_stock_info.entity';
@@ -22,6 +23,10 @@ export class SpoInterestStock {
   @Column({ name: 'USR_SEQ' })
   @ApiProperty({ description: '유저일련번호', example: 11 })
   userSequence: number;
+
+  @UpdateDateColumn({ name: 'UPDT_AT' })
+  @ApiProperty({ description: '업데이트 일자', example: '20231218' })
+  updateAt: Date;
 
   @ManyToOne(() => SpoStockInfo, (stockInfo) => stockInfo.stockInfoSequence)
   @JoinColumn({
