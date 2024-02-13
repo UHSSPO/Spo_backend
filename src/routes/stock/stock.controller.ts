@@ -54,6 +54,7 @@ export class StockController {
   }
 
   @Get('/popular')
+  @UseGuards(JwtAllGuard)
   @ApiResponse({
     status: 200,
     description: 'Success',
@@ -62,8 +63,8 @@ export class StockController {
   @ApiOperation({
     summary: '인기종목 api',
   })
-  async getPopularStockInfo(): Promise<HomeStockInfo[]> {
-    return await this.stockService.getPopularStockInfo();
+  async getPopularStockInfo(@Request() req): Promise<HomeStockInfo[]> {
+    return await this.stockService.getPopularStockInfo(req.user);
   }
 
   @Get(':stockInfoSequence')

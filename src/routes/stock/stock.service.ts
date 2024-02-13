@@ -137,7 +137,9 @@ export class StockService {
     return longInvestResult;
   }
 
-  async getPopularStockInfo(): Promise<HomeStockInfo[]> {
+  async getPopularStockInfo(user: IUserInterface): Promise<HomeStockInfo[]> {
+    const userSeq = user ? user.userSequence : 0;
+    console.log(userSeq);
     const popularStockResult: HomeStockInfo[] =
       await this.stockPriceInfoRepository
         .createQueryBuilder('SSPI')
@@ -148,6 +150,9 @@ export class StockService {
           'SSPI.FLT_RT as fltRt',
           'SSPI.TRQU as trqu',
           'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+          `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
+          FROM SPO_INTERST_STK SIS
+          WHERE SIS.USR_SEQ = ${userSeq} AND SSPI.STK_INFO_SEQ = SIS.STK_INFO_SEQ) as interestStockYn`,
         ])
         .innerJoin(SpoStockInfo, 'SSI', 'SSPI.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
         .where('SSI.TRAD_SUSPD_YN = :tradeSuspendYn', { tradeSuspendYn: 'N' })
