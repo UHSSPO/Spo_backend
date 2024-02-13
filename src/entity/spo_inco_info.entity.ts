@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { SpoStockInfo } from './spo_stock_info.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'SPO_INCO_INFO' })
 export class SpoIncoInfo {
@@ -57,7 +58,7 @@ export class SpoIncoInfo {
   acitNm: string;
 
   @Column({ name: 'THQR_ACIT_AMT', type: 'bigint' })
-  @ApiProperty({ description: '당분기계정과목금액', example: 10000000 })
+  @Exclude()
   thqrAcitAmt: number;
 
   @Column({ name: 'CRTM_ACIT_AMT', type: 'bigint' })
@@ -65,7 +66,7 @@ export class SpoIncoInfo {
   crtmAcitAmt: number;
 
   @Column({ name: 'ISQT_ACIT_AMT', type: 'bigint' })
-  @ApiProperty({ description: '전분기계정과목금액', example: 11000000 })
+  @Exclude()
   lsqtAcitAmt: number;
 
   @Column({ name: 'PVTR_ACIT_AMT', type: 'bigint' })

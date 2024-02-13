@@ -85,6 +85,7 @@ export class AuthService {
 
   async login(req: SpoUser): Promise<LoginResDto> {
     const payload = {
+      userSequence: req.userSequence,
       email: req.email,
       nickName: req.nickName,
       userRole: req.userRole,

@@ -6,6 +6,7 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('batch')
 export class BatchController {
   constructor(private batchService: BatchService) {}
+
   @Get('/stock')
   stockBatchTask() {
     return this.batchService.stockBatchTask();

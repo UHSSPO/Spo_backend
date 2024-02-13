@@ -6,7 +6,7 @@ import DatabaseLogger from './common/logger/databaseLogger';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BatchModule } from './routes/batch/batch.module';
-import { HomeModule } from './routes/home/home.module';
+import { StockModule } from './routes/stock/stock.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SuccessInterceptor } from './common/interceptor/success.interceptor';
 
@@ -14,7 +14,7 @@ import { SuccessInterceptor } from './common/interceptor/success.interceptor';
   imports: [
     AuthModule,
     BatchModule,
-    HomeModule,
+    StockModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
