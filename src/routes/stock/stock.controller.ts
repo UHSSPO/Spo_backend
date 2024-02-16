@@ -31,7 +31,7 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: MarketIndexResDto,
+    type: [MarketIndexResDto],
   })
   @ApiOperation({
     summary: '지수정보 api',
@@ -58,7 +58,7 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: HomeStockInfo,
+    type: [HomeStockInfo],
   })
   @ApiOperation({
     summary: '인기종목 api',
@@ -89,7 +89,7 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: HomeStockInfo,
+    type: [HomeStockInfo],
   })
   @ApiOperation({
     summary: '단기투자 추천 종목 api',
@@ -103,7 +103,7 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: HomeStockInfo,
+    type: [HomeStockInfo],
   })
   @ApiOperation({
     summary: '장기투자 추천 종목 api',
@@ -117,13 +117,41 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: HomeStockInfo,
+    type: [HomeStockInfo],
   })
   @ApiOperation({
     summary: '내 관심 주식 api',
   })
   async getMyInterestStock(@Request() req): Promise<HomeStockInfo[]> {
     return await this.stockService.getMyInterestStock(req.user);
+  }
+
+  @Get('/recommend/long-investment-all')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: [HomeStockInfo],
+  })
+  @ApiOperation({
+    summary: '장기투자 추천 종목 더보기 api',
+  })
+  async getLongInvestRecommendAll(@Request() req): Promise<HomeStockInfo[]> {
+    return await this.stockService.getLongInvestRecommendAll(req.user);
+  }
+
+  @Get('/recommend/short-investment-all')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: [HomeStockInfo],
+  })
+  @ApiOperation({
+    summary: '단기투자 추천 종목 더보기 api',
+  })
+  async getShortInvestRecommendAll(@Request() req): Promise<HomeStockInfo[]> {
+    return await this.stockService.getShortInvestRecommendAll(req.user);
   }
 
   @Post('/interest')
