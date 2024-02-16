@@ -147,6 +147,7 @@ export class StockService {
         'SSPI.FLT_RT as fltRt',
         'SSPI.TRQU as trqu',
         'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+        'SEC.RAT as rating',
         `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
           FROM SPO_INTERST_STK SIS
           INNER JOIN SPO_STK_INFO SSI on SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ
@@ -180,6 +181,7 @@ export class StockService {
         'SSPI.FLT_RT as fltRt',
         'SSPI.TRQU as trqu',
         'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+        'SEC.RAT as rating',
         `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
           FROM SPO_INTERST_STK SIS
           INNER JOIN SPO_STK_INFO SSI on SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ
