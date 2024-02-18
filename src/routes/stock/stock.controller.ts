@@ -14,6 +14,7 @@ import {
   HomeStockInfo,
   ThemeStockInfo,
   UpdateInterestStock,
+  SearchStockInfo,
 } from './dto/res.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StockService } from './stock.service';
@@ -27,6 +28,18 @@ import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 export class StockController {
   constructor(private stockService: StockService) {}
 
+  @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: [HomeStockInfo],
+  })
+  @ApiOperation({
+    summary: '전체 상장 종목 api',
+  })
+  async getAllStock(): Promise<SearchStockInfo[]> {
+    return this.stockService.getAllStock();
+  }
   @Get('/market-index')
   @ApiResponse({
     status: 200,

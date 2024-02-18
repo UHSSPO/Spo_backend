@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   HomeStockInfo,
   MarketIndexResDto,
+  SearchStockInfo,
   ThemeStockInfo,
   UpdateInterestStock,
 } from './dto/res.dto';
@@ -30,6 +31,20 @@ export class StockService {
 
     private dataSource: DataSource,
   ) {}
+  async getAllStock(): Promise<SearchStockInfo[]> {
+    return await this.stockInfoRepository
+      .createQueryBuilder('SSI')
+      .select([
+        'SSI.STK_INFO_SEQ as stockInfoSequence',
+        'SSI.ITMS_NM as itmsNm',
+      ])
+      .where('SSI.TRAD_SUSPD_YN = :suspend AND SSI.BAD_DATA = :badData', {
+        suspend: 'N',
+        badData: 'N',
+      })
+      .getRawMany();
+  }
+
   async getStockInfo(stockInfoSequence: number): Promise<SpoStockInfo> {
     const stockInfo = await this.stockInfoRepository
       .createQueryBuilder('SSI')
