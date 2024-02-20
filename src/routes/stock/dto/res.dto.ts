@@ -37,6 +37,22 @@ export class MarketIndexResDto {
   fltRt: number;
 }
 
+export class SearchStockInfo {
+  @ApiProperty({
+    example: 1,
+    description: '주식상장정보 일련번호',
+    required: true,
+  })
+  stockInfoSequence: number;
+
+  @ApiProperty({
+    example: '현대차',
+    description: '주식명',
+    required: true,
+  })
+  itmsNm: string;
+}
+
 export class HomeStockInfo {
   @ApiProperty({
     example: 1,

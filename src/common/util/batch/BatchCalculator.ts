@@ -6,22 +6,14 @@ export class BatchCalculator {
     financialStatementDebtRatio: number,
   ): number {
     let financialStatementDebtRatioScore = 0;
+
     if (financialStatementDebtRatio >= 0 && financialStatementDebtRatio < 20) {
       financialStatementDebtRatioScore = 5;
-    } else if (
-      financialStatementDebtRatio >= 20 &&
-      financialStatementDebtRatio < 40
-    ) {
+    } else if (financialStatementDebtRatio < 40) {
       financialStatementDebtRatioScore = 4;
-    } else if (
-      financialStatementDebtRatio >= 40 &&
-      financialStatementDebtRatio < 60
-    ) {
+    } else if (financialStatementDebtRatio < 60) {
       financialStatementDebtRatioScore = 3;
-    } else if (
-      financialStatementDebtRatio >= 60 &&
-      financialStatementDebtRatio < 80
-    ) {
+    } else if (financialStatementDebtRatio < 80) {
       financialStatementDebtRatioScore = 2;
     } else {
       financialStatementDebtRatioScore = 1;
@@ -32,29 +24,32 @@ export class BatchCalculator {
 
   public static getRoaScore(roa: number): number {
     let roaScore = 0;
+
     if (roa >= 15) {
       roaScore = 5;
-    } else if (roa >= 10 && roa < 15) {
+    } else if (roa >= 10) {
       roaScore = 4;
-    } else if (roa >= 5 && roa < 10) {
+    } else if (roa >= 5) {
       roaScore = 3;
-    } else if (roa >= 1 && roa < 5) {
+    } else if (roa >= 1) {
       roaScore = 2;
     } else {
       roaScore = 1;
     }
+
     return roaScore;
   }
 
   public static getRoeScore(roe: number): number {
     let roeScore = 0;
+
     if (roe >= 15) {
       roeScore = 5;
-    } else if (roe >= 10 && roe < 15) {
+    } else if (roe >= 10) {
       roeScore = 4;
-    } else if (roe >= 5 && roe < 10) {
+    } else if (roe >= 5) {
       roeScore = 3;
-    } else if (roe >= 1 && roe < 5) {
+    } else if (roe >= 1) {
       roeScore = 2;
     } else {
       roeScore = 1;
@@ -68,11 +63,11 @@ export class BatchCalculator {
 
     if (pbr <= 0.5) {
       pbrScore = 5;
-    } else if (pbr >= 0.6 && pbr < 0.8) {
+    } else if (pbr < 0.8) {
       pbrScore = 4;
-    } else if (pbr >= 0.8 && pbr < 1.2) {
+    } else if (pbr < 1.2) {
       pbrScore = 3;
-    } else if (pbr >= 1.2 && pbr < 2) {
+    } else if (pbr < 2) {
       pbrScore = 2;
     } else {
       pbrScore = 1;
@@ -86,11 +81,11 @@ export class BatchCalculator {
 
     if (per <= 10) {
       perScore = 5;
-    } else if (per >= 10 && per < 15) {
+    } else if (per < 15) {
       perScore = 4;
-    } else if (per >= 15 && per < 20) {
+    } else if (per < 20) {
       perScore = 3;
-    } else if (per >= 20 && per < 25) {
+    } else if (per < 25) {
       perScore = 2;
     } else {
       perScore = 1;
@@ -104,11 +99,11 @@ export class BatchCalculator {
 
     if (salesGrowthRate >= 15) {
       salesGrowthRateScore = 5;
-    } else if (salesGrowthRate >= 10 && salesGrowthRate < 15) {
+    } else if (salesGrowthRate >= 10) {
       salesGrowthRateScore = 4;
-    } else if (salesGrowthRate >= 5 && salesGrowthRate < 10) {
+    } else if (salesGrowthRate >= 5) {
       salesGrowthRateScore = 3;
-    } else if (salesGrowthRate >= 1 && salesGrowthRate < 5) {
+    } else if (salesGrowthRate >= 1) {
       salesGrowthRateScore = 2;
     } else {
       salesGrowthRateScore = 1;
@@ -124,20 +119,11 @@ export class BatchCalculator {
 
     if (incomeBeforeTaxExpenseDiff >= 15) {
       incomeBeforeTaxExpenseDiffScore = 5;
-    } else if (
-      incomeBeforeTaxExpenseDiff >= 10 &&
-      incomeBeforeTaxExpenseDiff < 15
-    ) {
+    } else if (incomeBeforeTaxExpenseDiff >= 10) {
       incomeBeforeTaxExpenseDiffScore = 4;
-    } else if (
-      incomeBeforeTaxExpenseDiff >= 5 &&
-      incomeBeforeTaxExpenseDiff < 10
-    ) {
+    } else if (incomeBeforeTaxExpenseDiff >= 5) {
       incomeBeforeTaxExpenseDiffScore = 3;
-    } else if (
-      incomeBeforeTaxExpenseDiff >= 1 &&
-      incomeBeforeTaxExpenseDiff < 5
-    ) {
+    } else if (incomeBeforeTaxExpenseDiff >= 1) {
       incomeBeforeTaxExpenseDiffScore = 2;
     } else {
       incomeBeforeTaxExpenseDiffScore = 1;
@@ -179,11 +165,11 @@ export class BatchCalculator {
 
     if (changeMarketGap >= 15) {
       changeMarketGapScore = 5;
-    } else if (changeMarketGap >= 10 && changeMarketGap < 15) {
+    } else if (changeMarketGap >= 10) {
       changeMarketGapScore = 4;
-    } else if (changeMarketGap >= 5 && changeMarketGap < 10) {
+    } else if (changeMarketGap >= 5) {
       changeMarketGapScore = 3;
-    } else if (changeMarketGap >= 0 && changeMarketGap < 5) {
+    } else if (changeMarketGap >= 0) {
       changeMarketGapScore = 2;
     } else {
       changeMarketGapScore = 1;
@@ -194,13 +180,14 @@ export class BatchCalculator {
 
   public static getVolumeRatioScore(volumeRatio: number): number {
     let volumeRatioScore = 0;
+
     if (volumeRatio >= 2) {
       volumeRatioScore = 5;
-    } else if (volumeRatio >= 1.5 && volumeRatio < 2) {
+    } else if (volumeRatio >= 1.5) {
       volumeRatioScore = 4;
-    } else if (volumeRatio >= 1 && volumeRatio < 1.5) {
+    } else if (volumeRatio >= 1) {
       volumeRatioScore = 3;
-    } else if (volumeRatio >= 0.5 && volumeRatio < 1) {
+    } else if (volumeRatio >= 0.5) {
       volumeRatioScore = 2;
     } else {
       volumeRatioScore = 1;
@@ -214,11 +201,11 @@ export class BatchCalculator {
 
     if (totalScore >= 40) {
       rating = 'A';
-    } else if (totalScore >= 30 && totalScore < 39) {
+    } else if (totalScore >= 30) {
       rating = 'B';
-    } else if (totalScore >= 20 && totalScore < 29) {
+    } else if (totalScore >= 20) {
       rating = 'C';
-    } else if (totalScore >= 15 && totalScore < 19) {
+    } else if (totalScore >= 15) {
       rating = 'D';
     } else {
       rating = 'E';

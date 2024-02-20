@@ -16,6 +16,7 @@ import { SpoEnterpriseCategory } from './spo_entpr_categr.entity';
 import { SpoEnterpriseScore } from './spo_entpr_scor.entity';
 import { SpoInterestStock } from './spo_interest_stock.entity';
 import { SpoStockView } from './spo_stock_view.entity';
+import { SpoStockRisk } from './spo_stock_risk.entity';
 
 @Entity({ name: 'SPO_STK_INFO' })
 @Index('idx_crno', ['crno'], { unique: true })
@@ -103,4 +104,7 @@ export class SpoStockInfo {
 
   @OneToOne(() => SpoStockView, (stockView) => stockView.stockInfo)
   stockView: SpoStockView;
+
+  @OneToOne(() => SpoStockRisk, (stockRisk) => stockRisk.stockInfo)
+  stockRisk: SpoStockRisk;
 }

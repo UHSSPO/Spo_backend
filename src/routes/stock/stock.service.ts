@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
-  MarketIndexResDto,
   HomeStockInfo,
+  MarketIndexResDto,
+  SearchStockInfo,
   ThemeStockInfo,
   UpdateInterestStock,
 } from './dto/res.dto';
@@ -30,6 +31,20 @@ export class StockService {
 
     private dataSource: DataSource,
   ) {}
+  async getAllStock(): Promise<SearchStockInfo[]> {
+    return await this.stockInfoRepository
+      .createQueryBuilder('SSI')
+      .select([
+        'SSI.STK_INFO_SEQ as stockInfoSequence',
+        'SSI.ITMS_NM as itmsNm',
+      ])
+      .where('SSI.TRAD_SUSPD_YN = :suspend AND SSI.BAD_DATA = :badData', {
+        suspend: 'N',
+        badData: 'N',
+      })
+      .getRawMany();
+  }
+
   async getStockInfo(stockInfoSequence: number): Promise<SpoStockInfo> {
     const stockInfo = await this.stockInfoRepository
       .createQueryBuilder('SSI')
@@ -62,79 +77,146 @@ export class StockService {
 
   async getShortInvestRecommend(user): Promise<HomeStockInfo[]> {
     const userSeq = user ? user.userSequence : 0;
-    const shortInvestResult: HomeStockInfo[] =
-      await this.stockPriceInfoRepository
-        .createQueryBuilder('SSPI')
-        .select([
-          'SEC.STK_INFO_SEQ as stockInfoSequence',
-          'SSPI.ITMS_NM as itmsNm',
-          'SSPI.CLPR as clpr',
-          'SSPI.FLT_RT as fltRt',
-          'SSPI.TRQU as trqu',
-          'SSPI.MRKT_TOT_AMT as mrktTotAmt',
-          `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
+    return await this.stockPriceInfoRepository
+      .createQueryBuilder('SSPI')
+      .select([
+        'SEC.STK_INFO_SEQ as stockInfoSequence',
+        'SSPI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+        `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
           FROM SPO_INTERST_STK SIS
           INNER JOIN SPO_STK_INFO SSI on SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ
           WHERE SIS.USR_SEQ = ${userSeq} AND SSI.STK_INFO_SEQ = SEC.STK_INFO_SEQ) as interestStockYn`,
-        ])
-        .innerJoin(
-          SpoEnterpriseScore,
-          'SEC',
-          'SEC.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
-        )
-        .innerJoin(
-          SpoEnterpriseCategory,
-          'SECT',
-          'SECT.ENTPR_CATEGO_SEQ = SEC.ENTPR_CATEGO_SEQ',
-        )
-        .where('SEC.RAT = :rating', { rating: 'A' })
-        .orderBy('SEC.TOTL_SCOR', 'DESC')
-        .limit(5)
-        .getRawMany();
-
-    return shortInvestResult;
+      ])
+      .innerJoin(
+        SpoEnterpriseScore,
+        'SEC',
+        'SEC.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
+      )
+      .innerJoin(
+        SpoEnterpriseCategory,
+        'SECT',
+        'SECT.ENTPR_CATEGO_SEQ = SEC.ENTPR_CATEGO_SEQ',
+      )
+      .where('SEC.RAT = :rating AND  SSPI.MRKT_TOT_AMT < :amount', {
+        rating: 'A',
+        amount: 10000000000000,
+      })
+      .orderBy('SEC.TOTL_SCOR', 'DESC')
+      .limit(5)
+      .getRawMany();
   }
 
   async getLongInvestRecommend(user: IUserInterface): Promise<HomeStockInfo[]> {
     const userSeq = user ? user.userSequence : 0;
-    const longInvestResult: HomeStockInfo[] =
-      await this.stockPriceInfoRepository
-        .createQueryBuilder('SSPI')
-        .select([
-          'SEC.STK_INFO_SEQ as stockInfoSequence',
-          'SSPI.ITMS_NM as itmsNm',
-          'SSPI.CLPR as clpr',
-          'SSPI.FLT_RT as fltRt',
-          'SSPI.TRQU as trqu',
-          'SSPI.MRKT_TOT_AMT as mrktTotAmt',
-          `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
+    return await this.stockPriceInfoRepository
+      .createQueryBuilder('SSPI')
+      .select([
+        'SEC.STK_INFO_SEQ as stockInfoSequence',
+        'SSPI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+        `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
           FROM SPO_INTERST_STK SIS
           INNER JOIN SPO_STK_INFO SSI on SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ
           WHERE SIS.USR_SEQ = ${userSeq} AND SSI.STK_INFO_SEQ = SEC.STK_INFO_SEQ) as interestStockYn`,
-        ])
-        .innerJoin(
-          SpoEnterpriseScore,
-          'SEC',
-          'SEC.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
-        )
-        .innerJoin(
-          SpoEnterpriseCategory,
-          'SECT',
-          'SECT.ENTPR_CATEGO_SEQ = SEC.ENTPR_CATEGO_SEQ',
-        )
-        .where(
-          '(SEC.RAT = :ratingA OR SEC.RAT = :ratingB) AND SSPI.MRKT_TOT_AMT > :amount',
-          {
-            ratingA: 'A',
-            ratingB: 'B',
-            amount: 10000000000000,
-          },
-        )
-        .orderBy('SEC.TOTL_SCOR', 'DESC')
-        .limit(5)
-        .getRawMany();
+      ])
+      .innerJoin(
+        SpoEnterpriseScore,
+        'SEC',
+        'SEC.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
+      )
+      .innerJoin(
+        SpoEnterpriseCategory,
+        'SECT',
+        'SECT.ENTPR_CATEGO_SEQ = SEC.ENTPR_CATEGO_SEQ',
+      )
+      .where(
+        '(SEC.RAT = :ratingA OR SEC.RAT = :ratingB) AND SSPI.MRKT_TOT_AMT > :amount',
+        {
+          ratingA: 'A',
+          ratingB: 'B',
+          amount: 10000000000000,
+        },
+      )
+      .orderBy('SEC.TOTL_SCOR', 'DESC')
+      .limit(5)
+      .getRawMany();
+  }
 
-    return longInvestResult;
+  async getLongInvestRecommendAll(
+    user: IUserInterface,
+  ): Promise<HomeStockInfo[]> {
+    const userSeq = user ? user.userSequence : 0;
+    return await this.stockPriceInfoRepository
+      .createQueryBuilder('SSPI')
+      .select([
+        'SEC.STK_INFO_SEQ as stockInfoSequence',
+        'SSPI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+        'SEC.RAT as rating',
+        `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
+          FROM SPO_INTERST_STK SIS
+          INNER JOIN SPO_STK_INFO SSI on SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ
+          WHERE SIS.USR_SEQ = ${userSeq} AND SSI.STK_INFO_SEQ = SEC.STK_INFO_SEQ) as interestStockYn`,
+      ])
+      .innerJoin(
+        SpoEnterpriseScore,
+        'SEC',
+        'SEC.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
+      )
+      .innerJoin(
+        SpoEnterpriseCategory,
+        'SECT',
+        'SECT.ENTPR_CATEGO_SEQ = SEC.ENTPR_CATEGO_SEQ',
+      )
+      .where('SSPI.MRKT_TOT_AMT > :amount', {
+        amount: 10000000000000,
+      })
+      .orderBy('SEC.TOTL_SCOR', 'DESC')
+      .getRawMany();
+  }
+
+  async getShortInvestRecommendAll(user): Promise<HomeStockInfo[]> {
+    const userSeq = user ? user.userSequence : 0;
+    return await this.stockPriceInfoRepository
+      .createQueryBuilder('SSPI')
+      .select([
+        'SEC.STK_INFO_SEQ as stockInfoSequence',
+        'SSPI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+        'SEC.RAT as rating',
+        `(SELECT IF(COUNT(*) > 0, 'Y', 'N')
+          FROM SPO_INTERST_STK SIS
+          INNER JOIN SPO_STK_INFO SSI on SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ
+          WHERE SIS.USR_SEQ = ${userSeq} AND SSI.STK_INFO_SEQ = SEC.STK_INFO_SEQ) as interestStockYn`,
+      ])
+      .innerJoin(
+        SpoEnterpriseScore,
+        'SEC',
+        'SEC.STK_INFO_SEQ = SSPI.STK_INFO_SEQ',
+      )
+      .innerJoin(
+        SpoEnterpriseCategory,
+        'SECT',
+        'SECT.ENTPR_CATEGO_SEQ = SEC.ENTPR_CATEGO_SEQ',
+      )
+      .where('SSPI.MRKT_TOT_AMT < :amount', {
+        amount: 10000000000000,
+      })
+      .orderBy('SEC.TOTL_SCOR', 'DESC')
+      .getRawMany();
   }
 
   async getPopularStockInfo(user: IUserInterface): Promise<HomeStockInfo[]> {
@@ -194,7 +276,7 @@ export class StockService {
 
   async getMyInterestStock(user: IUserInterface): Promise<HomeStockInfo[]> {
     const userSeq = user ? user.userSequence : 0;
-    const myInterestStock: HomeStockInfo[] = await this.stockPriceInfoRepository
+    return await this.stockPriceInfoRepository
       .createQueryBuilder('SSPI')
       .select([
         'SSPI.STK_INFO_SEQ as stockInfoSequence',
@@ -210,8 +292,6 @@ export class StockService {
       .orderBy('SIS.UPDT_AT', 'ASC')
       .limit(5)
       .getRawMany();
-
-    return myInterestStock;
   }
 
   async getThemeStockInfo(): Promise<ThemeStockInfo> {
