@@ -32,7 +32,7 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: [HomeStockInfo],
+    type: [SearchStockInfo],
   })
   @ApiOperation({
     summary: '전체 상장 종목 api',
