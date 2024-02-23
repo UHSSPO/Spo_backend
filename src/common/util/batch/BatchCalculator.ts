@@ -252,4 +252,51 @@ export class BatchCalculator {
 
     return result;
   }
+
+  public static getStandardDeviation(clprArray: number[]): number {
+    // 평균 계산
+    const mean =
+      clprArray.reduce((sum, value) => sum + value, 0) / clprArray.length;
+
+    // 각 데이터와 평균의 차이의 제곱 계산
+    const squaredDeviations = clprArray.map((value) =>
+      Math.pow(value - mean, 2),
+    );
+
+    // 평균 제곱 편차 계산
+    const meanSquaredDeviation =
+      squaredDeviations.reduce((sum, value) => sum + value, 0) /
+      clprArray.length;
+
+    // 표준편차 계산
+    const standardDeviation = Math.sqrt(meanSquaredDeviation);
+
+    // 백분율로 변환
+    const standardDeviationPercent = ((standardDeviation / mean) * 100).toFixed(
+      2,
+    );
+
+    return Number(standardDeviationPercent);
+  }
+
+  public static getRisk(
+    standardDeviation: number,
+    percentageDifference: number,
+  ): string {
+    const score = ((standardDeviation + percentageDifference) / 2).toFixed(2);
+    let risk = '';
+    if (Number(score) >= 5) {
+      risk = '05';
+    } else if (Number(score) >= 3) {
+      risk = '04';
+    } else if (Number(score) >= 1) {
+      risk = '03';
+    } else if (Number(score) >= 0.5) {
+      risk = '02';
+    } else {
+      risk = '01';
+    }
+
+    return risk;
+  }
 }

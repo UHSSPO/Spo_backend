@@ -23,6 +23,7 @@ import { SpoMarketIndex } from '../../entity/spo_market_index.entity';
 import { SpoEnterpriseCategory } from '../../entity/spo_entpr_categr.entity';
 import { SpoEnterpriseScore } from '../../entity/spo_entpr_scor.entity';
 import { BatchCalculator } from '../../common/util/batch/BatchCalculator';
+import { SpoStockRisk } from '../../entity/spo_stock_risk.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -43,8 +44,8 @@ export class BatchService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
-      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-    // this.shouldRunBatch = true;
+      // process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+      this.shouldRunBatch = true;
   }
 
   // 상장종목정보
@@ -108,7 +109,8 @@ export class BatchService implements OnApplicationBootstrap {
           StringUtil.isNotEmpty(this.krxListedInfoResData) &&
           StringUtil.isNotEmpty(this.finaStatInfoResData)
         ) {
-          let filteredDataArray = this.krxListedInfoResData.filter(
+          let filteredDataArray = _.filter(
+            this.krxListedInfoResData,
             (krxListItem) =>
               this.stockPriceInfoResData.some(
                 (stockPriceItem) =>
@@ -116,7 +118,7 @@ export class BatchService implements OnApplicationBootstrap {
               ),
           );
 
-          filteredDataArray = filteredDataArray.filter((krxListItem) =>
+          filteredDataArray = _.filter(filteredDataArray, (krxListItem) =>
             this.finaStatInfoResData.some(
               (finaItem) => finaItem.crno === krxListItem.crno,
             ),
@@ -246,7 +248,8 @@ export class BatchService implements OnApplicationBootstrap {
             await manager.clear(SpoIncoInfo);
 
             for (const stockInfo of stockInfos) {
-              const matchingIncoInfos = this.incoStataInfoResData.filter(
+              const matchingIncoInfos = _.filter(
+                this.incoStataInfoResData,
                 (incoStatInfo) =>
                   incoStatInfo.crno === stockInfo.crno &&
                   incoStatInfo.fnclDcd !== 'PL_ifrs-full_ConsolidatedMember',
@@ -381,20 +384,21 @@ export class BatchService implements OnApplicationBootstrap {
       const basDt = StringUtil.get15thDate();
       try {
         // 15일 주식 시세 정보 호출
-        const stockPrice15thInfoRes: any = await axios.get(
-          `${
-            OpenApi.GetStockPriceInfoService
-          }?serviceKey=${this.configService.get<string>(
-            'GET_KRX_LIST_INFO_KEY',
-          )}&beginBasDt=${basDt}&resultType=${this.configService.get<string>(
-            'RESULT_TYPE',
-          )}&pageNo=${this.configService.get<string>(
-            'PAGE_NO',
-          )}&numOfRows=200000`,
-        );
-        this.stockPrice15thInfoResData =
-          stockPrice15thInfoRes.data?.response?.body?.items?.item;
-
+        for (let i = 0; i <= 5; i++) {
+          const stockPrice15thInfoRes: any = await axios.get(
+            `${
+              OpenApi.GetStockPriceInfoService
+            }?serviceKey=${this.configService.get<string>(
+              'GET_KRX_LIST_INFO_KEY',
+            )}&beginBasDt=${basDt}&resultType=${this.configService.get<string>(
+              'RESULT_TYPE',
+            )}&pageNo=${i}&numOfRows=200000`,
+          );
+          this.stockPrice15thInfoResData =
+            this.stockPrice15thInfoResData.concat(
+              stockPrice15thInfoRes.data?.response?.body?.items?.item,
+            );
+        }
         if (
           StringUtil.isNotEmpty(this.stockPrice15thInfoResData) &&
           _.isArray(this.stockPrice15thInfoResData)
@@ -403,11 +407,11 @@ export class BatchService implements OnApplicationBootstrap {
             const stockInfos = await manager.find(SpoStockInfo);
             await manager.clear(SpoStockPrice15thInfo);
             for (const stockInfo of stockInfos) {
-              const matchingStockPrice15thInfos =
-                this.stockPrice15thInfoResData.filter(
-                  (stockPrice15thInfo) =>
-                    'A' + stockPrice15thInfo.srtnCd === stockInfo.srtnCd,
-                );
+              const matchingStockPrice15thInfos = _.filter(
+                this.stockPrice15thInfoResData,
+                (stockPrice15thInfo) =>
+                  'A' + stockPrice15thInfo.srtnCd === stockInfo.srtnCd,
+              );
               if (matchingStockPrice15thInfos) {
                 for (const matchingStockPrice15thInfo of matchingStockPrice15thInfos) {
                   const stockPrice15thInfo = new SpoStockPrice15thInfo();
@@ -790,6 +794,52 @@ export class BatchService implements OnApplicationBootstrap {
         }
       });
       this.logger.log(`Success updateEnterpriseScore Update`);
+      await this.updateStockRisk();
+    }
+  }
+
+  async updateStockRisk() {
+    if (this.shouldRunBatch) {
+      await this.dataSource.transaction(async (manager) => {
+        const stockPriceInfos = await manager.find(SpoStockPrice15thInfo);
+        const stockInfos = await manager.find(SpoStockInfo);
+        for (const stockInfo of stockInfos) {
+          const stockRisk = new SpoStockRisk();
+          const matchingPriceInfo = _.filter(
+            stockPriceInfos,
+            (stockPriceInfo) =>
+              stockPriceInfo.stockInfoSequence ===
+                stockInfo.stockInfoSequence &&
+              stockInfo.tradeSuspendYn === 'N' &&
+              stockInfo.badData === 'N',
+          );
+          if (StringUtil.isNotEmpty(matchingPriceInfo)) {
+            // 표준편자 계산을 위한 종가 데이터 배열
+            const clprArray = _.map(matchingPriceInfo, 'clpr');
+            const standardDeviation =
+              BatchCalculator.getStandardDeviation(clprArray);
+
+            const highestClpr = _.maxBy(matchingPriceInfo, 'clpr').clpr;
+            const lowestClpr = _.minBy(matchingPriceInfo, 'clpr').clpr;
+            const percentageDifference = (
+              ((highestClpr - lowestClpr) / lowestClpr) *
+              100
+            ).toFixed(2);
+            const risk = BatchCalculator.getRisk(
+              standardDeviation,
+              Number(percentageDifference),
+            );
+            stockRisk.stockInfoSequence = stockInfo.stockInfoSequence;
+            stockRisk.standardDeviation = standardDeviation;
+            stockRisk.highLowDiff = Number(percentageDifference);
+            stockRisk.risk = risk;
+
+            await manager.upsert(SpoStockRisk, stockRisk, [
+              'stockRiskSequence',
+            ]);
+          }
+        }
+      });
     }
   }
 }
