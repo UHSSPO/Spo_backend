@@ -51,4 +51,9 @@ export class BatchController {
   updateStockRisk() {
     return this.batchService.updateStockRisk();
   }
+
+  @Get('/enterprise')
+  deleteEnterpriseInfo() {
+    return this.batchService.deleteEnterpriseInfo();
+  }
 }

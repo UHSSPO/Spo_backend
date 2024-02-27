@@ -24,6 +24,7 @@ import { SpoEnterpriseCategory } from '../../entity/spo_entpr_categr.entity';
 import { SpoEnterpriseScore } from '../../entity/spo_entpr_scor.entity';
 import { BatchCalculator } from '../../common/util/batch/BatchCalculator';
 import { SpoStockRisk } from '../../entity/spo_stock_risk.entity';
+import { SpoEnterpriseInfo } from '../../entity/spo_entpr_info.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -277,6 +278,7 @@ export class BatchService implements OnApplicationBootstrap {
             }
           });
           this.logger.log(`Success SpoIncoInfo Update`);
+          await this.deleteEnterpriseInfo();
         } else {
           this.logger.log(
             'Undefined Response from getIncoStatInfo API',
@@ -841,5 +843,11 @@ export class BatchService implements OnApplicationBootstrap {
         }
       });
     }
+  }
+
+  async deleteEnterpriseInfo() {
+    await this.dataSource.transaction(async (manager) => {
+      await manager.clear(SpoEnterpriseInfo);
+    });
   }
 }
