@@ -16,15 +16,24 @@ import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoInterestStock } from '../../entity/spo_interest_stock.entity';
 import { SpoStockView } from '../../entity/spo_stock_view.entity';
 import { IUserInterface } from '../../common/interface/user.interface';
+import { SpoEnterpriseInfo } from '../../entity/spo_entpr_info.entity';
+import axios from 'axios';
+import OpenApi from '../../common/openApi/openApi';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class StockService {
   constructor(
+    private configService: ConfigService,
+
     @InjectRepository(SpoMarketIndex)
     private marketIndexRepository: Repository<SpoMarketIndex>,
 
     @InjectRepository(SpoStockInfo)
     private stockInfoRepository: Repository<SpoStockInfo>,
+
+    @InjectRepository(SpoEnterpriseInfo)
+    private enterpriseInfoRepository: Repository<SpoEnterpriseInfo>,
 
     @InjectRepository(SpoStockPriceInfo)
     private stockPriceInfoRepository: Repository<SpoStockPriceInfo>,
@@ -46,12 +55,62 @@ export class StockService {
   }
 
   async getStockInfo(stockInfoSequence: number): Promise<SpoStockInfo> {
+    const enterpriseInfo = await this.enterpriseInfoRepository.findOne({
+      where: {
+        stockInfoSequence: stockInfoSequence,
+      },
+    });
+
+    if (!enterpriseInfo) {
+      await this.dataSource.transaction(async (manager) => {
+        const stockInfo = await manager.findOne(SpoStockInfo, {
+          where: { stockInfoSequence: stockInfoSequence },
+        });
+
+        if (stockInfo) {
+          const newEnterpriseInfo = new SpoEnterpriseInfo();
+          const enterpriseInfoRes = await axios.get(
+            `${
+              OpenApi.GetEnterpriseInfoService
+            }?serviceKey=${this.configService.get<string>(
+              'GET_KRX_LIST_INFO_KEY',
+            )}&resultType=${this.configService.get<string>(
+              'RESULT_TYPE',
+            )}&pageNo=${this.configService.get<string>(
+              'PAGE_NO',
+            )}&numOfRows=1&crno=${stockInfo.crno}`,
+          );
+
+          newEnterpriseInfo.stockInfoSequence = stockInfo.stockInfoSequence;
+          newEnterpriseInfo.crno = stockInfo.crno;
+          newEnterpriseInfo.corpNm =
+            enterpriseInfoRes.data?.response?.body?.items?.item[0].corpNm;
+          newEnterpriseInfo.enpBsadr =
+            enterpriseInfoRes.data?.response?.body?.items?.item[0].enpBsadr;
+          newEnterpriseInfo.enpHmpgUrl =
+            enterpriseInfoRes.data?.response?.body?.items?.item[0].enpHmpgUrl;
+          newEnterpriseInfo.enpTlno =
+            enterpriseInfoRes.data?.response?.body?.items?.item[0].enpTlno;
+          newEnterpriseInfo.enpEstbDt =
+            enterpriseInfoRes.data?.response?.body?.items?.item[0].enpEstbDt;
+          newEnterpriseInfo.enpEmpeCnt =
+            enterpriseInfoRes.data?.response?.body?.items?.item[0].enpEmpeCnt;
+          newEnterpriseInfo.enpMainBizNm =
+            enterpriseInfoRes.data?.response?.body?.items?.item[0].enpMainBizNm;
+
+          await manager.save(SpoEnterpriseInfo, newEnterpriseInfo);
+        }
+      });
+    }
+
     const stockInfo = await this.stockInfoRepository
       .createQueryBuilder('SSI')
       .leftJoinAndSelect('SSI.priceInfo', 'stockPriceInfo')
+      .leftJoinAndSelect('SSI.prc15tnMonInfo', 'prc15tnMonInfo')
       .leftJoinAndSelect('SSI.summFinaInfo', 'summFinaInfo')
       .leftJoinAndSelect('SSI.incoInfo', 'incoInfo')
       .leftJoinAndSelect('SSI.enterpriseCategories', 'enterpriseCategories')
+      .leftJoinAndSelect('SSI.enterpriseInfo', 'enterpriseInfo')
       .where('SSI.stockInfoSequence = :stockInfoSequence', {
         stockInfoSequence,
       })
@@ -221,7 +280,6 @@ export class StockService {
 
   async getPopularStockInfo(user: IUserInterface): Promise<HomeStockInfo[]> {
     const userSeq = user ? user.userSequence : 0;
-    console.log(userSeq);
     const popularStockResult: HomeStockInfo[] =
       await this.stockPriceInfoRepository
         .createQueryBuilder('SSPI')

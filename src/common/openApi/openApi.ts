@@ -22,4 +22,8 @@ export default class OpenApi {
   // 파상생품 지수 시세
   public static readonly GetDerivationMarketIndexService: string =
     'https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService/getDerivationProductMarketIndex';
+
+  // 기업 기본 정보
+  public static readonly GetEnterpriseInfoService: string =
+    'http://apis.data.go.kr/1160100/service/GetCorpBasicInfoService_V2/getCorpOutline_V2';
 }

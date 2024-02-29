@@ -46,4 +46,14 @@ export class BatchController {
   enterpriseScore() {
     return this.batchService.updateEnterpriseScore();
   }
+
+  @Get('/stock-risk')
+  updateStockRisk() {
+    return this.batchService.updateStockRisk();
+  }
+
+  @Get('/enterprise')
+  deleteEnterpriseInfo() {
+    return this.batchService.deleteEnterpriseInfo();
+  }
 }
