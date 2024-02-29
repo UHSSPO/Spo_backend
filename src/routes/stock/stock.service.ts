@@ -106,6 +106,7 @@ export class StockService {
     const stockInfo = await this.stockInfoRepository
       .createQueryBuilder('SSI')
       .leftJoinAndSelect('SSI.priceInfo', 'stockPriceInfo')
+      .leftJoinAndSelect('SSI.prc15tnMonInfo', 'prc15tnMonInfo')
       .leftJoinAndSelect('SSI.summFinaInfo', 'summFinaInfo')
       .leftJoinAndSelect('SSI.incoInfo', 'incoInfo')
       .leftJoinAndSelect('SSI.enterpriseCategories', 'enterpriseCategories')
