@@ -9,12 +9,14 @@ import { BatchModule } from './routes/batch/batch.module';
 import { StockModule } from './routes/stock/stock.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SuccessInterceptor } from './common/interceptor/success.interceptor';
+import { UserModule } from './routes/user/user.module';
 
 @Module({
   imports: [
     AuthModule,
     BatchModule,
     StockModule,
+    UserModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
