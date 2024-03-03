@@ -27,6 +27,10 @@ export class SpoEnterpriseInfo {
   @ApiProperty({ description: '법인명', example: '삼성전자' })
   corpNm: string;
 
+  @Column({ name: 'ENP_RPR_FNM' })
+  @ApiProperty({ description: '대표이사 명', example: '김성욱' })
+  enpRprFnm: string;
+
   @Column({ name: 'ENP_BSADR', nullable: true })
   @ApiProperty({ description: '기업기본주소', example: '서울시 강남구' })
   enpBsadr: string;
