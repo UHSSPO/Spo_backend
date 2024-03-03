@@ -44,9 +44,9 @@ export class BatchService implements OnApplicationBootstrap {
   private derivationMarketIndexInfoResData: Array<IMarketIndexInfoRes> = [];
 
   onApplicationBootstrap() {
-    this.shouldRunBatch =
-      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-    // this.shouldRunBatch = true;
+    // this.shouldRunBatch =
+    //   process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+    this.shouldRunBatch = true;
   }
 
   // 상장종목정보
