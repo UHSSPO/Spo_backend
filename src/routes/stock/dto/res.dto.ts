@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { SpoStockInfo } from '../../../entity/spo_stock_info.entity';
 
 export class MarketIndexResDto {
   @ApiProperty({
@@ -155,3 +156,10 @@ export class ThemeStockInfo {
   })
   declineStock: HomeStockInfo[];
 }
+
+export class StockInfoResDto extends OmitType(SpoStockInfo, [
+  'stockRisk',
+  'stockView',
+  'interestStock',
+  'enterpriseScores',
+] as const) {}
