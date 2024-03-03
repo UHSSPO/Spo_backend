@@ -15,6 +15,7 @@ import {
   ThemeStockInfo,
   UpdateInterestStock,
   SearchStockInfo,
+  StockInfoResDto,
 } from './dto/res.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StockService } from './stock.service';
@@ -86,14 +87,14 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: SpoStockInfo,
+    type: StockInfoResDto,
   })
   @ApiOperation({
     summary: '주식 상세 api',
   })
   async getStockInfo(
     @Param('stockInfoSequence') stockInfoSequence: number,
-  ): Promise<SpoStockInfo> {
+  ): Promise<StockInfoResDto> {
     return this.stockService.getStockInfo(stockInfoSequence);
   }
 

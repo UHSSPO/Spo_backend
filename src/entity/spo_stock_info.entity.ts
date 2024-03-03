@@ -70,7 +70,7 @@ export class SpoStockInfo {
   @OneToOne(() => SpoSummFinaInfo, (finaInfo) => finaInfo.stockInfo)
   summFinaInfo: SpoSummFinaInfo;
 
-  @ApiProperty({ description: '손익계산서 정보', type: SpoIncoInfo })
+  @ApiProperty({ description: '손익계산서 정보', type: [SpoIncoInfo] })
   @OneToMany(() => SpoIncoInfo, (incoInfo) => incoInfo.stockInfo)
   incoInfo: SpoIncoInfo[];
 
@@ -78,6 +78,10 @@ export class SpoStockInfo {
   @OneToOne(() => SpoStockPriceInfo, (priceInfo) => priceInfo.stockInfo)
   priceInfo: SpoStockPriceInfo;
 
+  @ApiProperty({
+    description: '15일치 주식 데이터 정보',
+    type: [SpoStockPriceInfo],
+  })
   @OneToMany(
     () => SpoStockPrice15thInfo,
     (prc15tnMonInfo) => prc15tnMonInfo.stockInfo,
@@ -109,6 +113,7 @@ export class SpoStockInfo {
   @OneToOne(() => SpoStockRisk, (stockRisk) => stockRisk.stockInfo)
   stockRisk: SpoStockRisk;
 
+  @ApiProperty({ description: '기업정도', type: SpoEnterpriseInfo })
   @OneToOne(
     () => SpoEnterpriseInfo,
     (enterpriseInfo) => enterpriseInfo.stockInfo,
