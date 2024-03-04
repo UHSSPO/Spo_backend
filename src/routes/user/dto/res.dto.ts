@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { SpoUser } from '../../../entity/spo_user.entity';
 
 export class InvestPropensityRes {
   @ApiProperty({
@@ -8,3 +9,10 @@ export class InvestPropensityRes {
   })
   investPropensity: string;
 }
+
+export class SelectMyInfoRes extends OmitType(SpoUser, [
+  'pwd',
+  'signUpChannel',
+  'deleteYn',
+  'deleteAt',
+]) {}

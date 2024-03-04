@@ -1,11 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InvestPropensityReqBody } from './dto/req.dto';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SpoUser } from '../../entity/spo_user.entity';
+import { IUserInterface } from '../../common/interface/user.interface';
+import { SelectMyInfoRes } from './dto/res.dto';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    private dataSource: DataSource,
+    @InjectRepository(SpoUser)
+    private userRepository: Repository<SpoUser>,
+  ) {}
+
   async userInvestPropensity(
     reqBody: InvestPropensityReqBody,
     userSequence: number,
@@ -36,5 +44,33 @@ export class UserService {
     });
 
     return { investPropensity: investPropensity };
+  }
+
+  async getUserInfo(user: IUserInterface): Promise<SelectMyInfoRes> {
+    const userInfo = await this.userRepository
+      .createQueryBuilder('SPU')
+      .leftJoinAndSelect('SPU.interestStock', 'interestStock')
+      .where('SPU.USR_SEQ = :userSequence', {
+        userSequence: user.userSequence,
+      })
+      .getOne();
+
+    if (userInfo) {
+      return {
+        userSequence: userInfo.userSequence,
+        email: userInfo.email,
+        investPropensity: userInfo.investPropensity,
+        createdAt: userInfo.createdAt,
+        userRole: userInfo.userRole,
+        nickName: userInfo.nickName,
+        dateOfBirth: userInfo.dateOfBirth,
+        interestStock: userInfo.interestStock,
+      };
+    } else {
+      throw new HttpException(
+        '존재하지 않는 유저입니다.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 }

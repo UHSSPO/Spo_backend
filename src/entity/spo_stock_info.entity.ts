@@ -113,7 +113,7 @@ export class SpoStockInfo {
   @OneToOne(() => SpoStockRisk, (stockRisk) => stockRisk.stockInfo)
   stockRisk: SpoStockRisk;
 
-  @ApiProperty({ description: '기업정도', type: SpoEnterpriseInfo })
+  @ApiProperty({ description: '기업정보', type: SpoEnterpriseInfo })
   @OneToOne(
     () => SpoEnterpriseInfo,
     (enterpriseInfo) => enterpriseInfo.stockInfo,
