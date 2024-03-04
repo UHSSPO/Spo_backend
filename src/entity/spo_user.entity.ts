@@ -56,6 +56,6 @@ export class SpoUser {
   dateOfBirth: string;
 
   @OneToMany(() => SpoInterestStock, (interestStock) => interestStock.user)
-  @ApiProperty({ description: '관심주식', example: '{}' })
+  @ApiProperty({ description: '관심주식', type: [SpoInterestStock] })
   interestStock: SpoInterestStock[];
 }
