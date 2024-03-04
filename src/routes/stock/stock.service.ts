@@ -81,7 +81,6 @@ export class StockService {
             )}&numOfRows=1&crno=${stockInfo.crno}`,
           );
 
-          console.log(enterpriseInfoRes.data?.response?.body?.items?.item[0]);
           newEnterpriseInfo.stockInfoSequence = stockInfo.stockInfoSequence;
           newEnterpriseInfo.crno = stockInfo.crno;
           newEnterpriseInfo.corpNm =
