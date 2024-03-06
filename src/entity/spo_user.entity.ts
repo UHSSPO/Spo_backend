@@ -16,7 +16,7 @@ export class SpoUser {
   userSequence: number;
 
   @Column({ name: 'EMAIL' })
-  @ApiProperty({ description: '유저일련번호', example: 'test@naver.com' })
+  @ApiProperty({ description: '이메일', example: 'test@naver.com' })
   email: string;
 
   @Column({ name: 'PWD' })
@@ -56,5 +56,6 @@ export class SpoUser {
   dateOfBirth: string;
 
   @OneToMany(() => SpoInterestStock, (interestStock) => interestStock.user)
+  @ApiProperty({ description: '관심주식', type: [SpoInterestStock] })
   interestStock: SpoInterestStock[];
 }
