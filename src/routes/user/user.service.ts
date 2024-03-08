@@ -7,6 +7,9 @@ import { ChangePasswordRes, SelectMyInfoRes } from './dto/res.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
+import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
+import { SpoInterestStock } from '../../entity/spo_interest_stock.entity';
 
 @Injectable()
 export class UserService {
@@ -15,6 +18,8 @@ export class UserService {
     private configService: ConfigService,
     @InjectRepository(SpoUser)
     private userRepository: Repository<SpoUser>,
+    @InjectRepository(SpoStockPriceInfo)
+    private stockRepository: Repository<SpoStockPriceInfo>,
   ) {}
 
   async userInvestPropensity(
@@ -55,13 +60,27 @@ export class UserService {
   }
 
   async getUserInfo(user: IUserInterface): Promise<SelectMyInfoRes> {
-    const userInfo = await this.userRepository
-      .createQueryBuilder('SPU')
-      .leftJoinAndSelect('SPU.interestStock', 'interestStock')
-      .where('SPU.USR_SEQ = :userSequence', {
+    const userInfo: SpoUser = await this.userRepository.findOne({
+      where: {
         userSequence: user.userSequence,
-      })
-      .getOne();
+      },
+    });
+
+    const interestStock = await this.stockRepository
+      .createQueryBuilder('SSPI')
+      .select([
+        'SSPI.STK_INFO_SEQ as stockInfoSequence',
+        'SSPI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+      ])
+      .innerJoin(SpoStockInfo, 'SSI', 'SSPI.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
+      .innerJoin(SpoInterestStock, 'SIS', 'SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
+      .where(`SIS.USR_SEQ = ${user.userSequence}`)
+      .orderBy('SIS.UPDT_AT', 'ASC')
+      .getRawMany();
 
     if (userInfo) {
       return {
@@ -72,7 +91,7 @@ export class UserService {
         userRole: userInfo.userRole,
         nickName: userInfo.nickName,
         dateOfBirth: userInfo.dateOfBirth,
-        interestStock: userInfo.interestStock,
+        interestStock: interestStock,
       };
     } else {
       throw new HttpException(
