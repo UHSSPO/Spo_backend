@@ -19,6 +19,15 @@ export class ChangePasswordRes {
   changePasswordYn: string;
 }
 
+export class ChangeNickNameRes {
+  @ApiProperty({
+    example: 'Y',
+    description: '닉네임 변경 여부',
+    required: true,
+  })
+  changeNickNameYn: string;
+}
+
 export class UserInfoRes extends OmitType(SpoUser, [
   'pwd',
   'signUpChannel',

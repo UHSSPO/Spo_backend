@@ -1,9 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ChangePasswordReqBody, InvestPropensityReqBody } from './dto/req.dto';
+import {
+  ChangeNickNameReqBody,
+  ChangePasswordReqBody,
+  InvestPropensityReqBody,
+} from './dto/req.dto';
 import { DataSource, Repository } from 'typeorm';
 import { SpoUser } from '../../entity/spo_user.entity';
 import { IUserInterface } from '../../common/interface/user.interface';
-import { ChangePasswordRes, SelectMyInfoRes } from './dto/res.dto';
+import {
+  ChangeNickNameRes,
+  ChangePasswordRes,
+  SelectMyInfoRes,
+} from './dto/res.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
@@ -102,7 +110,7 @@ export class UserService {
   }
 
   async changePassword(
-    reqBody: ChangePasswordReqBody,
+    { beforePassword, afterPassword }: ChangePasswordReqBody,
     userSequence: number,
   ): Promise<ChangePasswordRes> {
     const userInfo: SpoUser = await this.userRepository.findOne({
@@ -110,12 +118,10 @@ export class UserService {
     });
 
     if (userInfo) {
-      const match = await compare(reqBody.beforePassword, userInfo.pwd);
+      const match = await compare(beforePassword, userInfo.pwd);
       if (match) {
         await this.dataSource.transaction(async (manager) => {
-          const encryptedPassword = await this.encryptPassword(
-            reqBody.afterPassword,
-          );
+          const encryptedPassword = await this.encryptPassword(afterPassword);
 
           await manager.update(
             SpoUser,
@@ -141,5 +147,31 @@ export class UserService {
       10,
     );
     return hash(password, numberSalt);
+  }
+
+  async changeNickName(
+    { changeNickName }: ChangeNickNameReqBody,
+    userSequence: number,
+  ): Promise<ChangeNickNameRes> {
+    await this.dataSource.transaction(async (manager) => {
+      const user = await manager.findOne(SpoUser, {
+        where: { userSequence: userSequence },
+      });
+
+      if (user) {
+        await manager.update(
+          SpoUser,
+          { userSequence: userSequence },
+          { nickName: changeNickName },
+        );
+      } else {
+        throw new HttpException(
+          '존재하지 않는 유저입니다.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+    });
+
+    return { changeNickNameYn: 'Y' };
   }
 }
