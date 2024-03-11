@@ -32,6 +32,11 @@ export class BatchController {
     return this.batchService.getStockPrice15thInfo();
   }
 
+  @Get('/stock-price/year')
+  updateStockPriceYearInfo() {
+    return this.batchService.updateStockPriceYearInfo();
+  }
+
   @Get('/market-index')
   marketIndexBatchTask() {
     return this.batchService.getMarketIndexInfo();

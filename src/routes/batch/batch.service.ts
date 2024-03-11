@@ -25,6 +25,7 @@ import { SpoEnterpriseScore } from '../../entity/spo_entpr_scor.entity';
 import { BatchCalculator } from '../../common/util/batch/BatchCalculator';
 import { SpoStockRisk } from '../../entity/spo_stock_risk.entity';
 import { SpoEnterpriseInfo } from '../../entity/spo_entpr_info.entity';
+import { SpoStockPriceYearInfo } from '../../entity/spo_stock_price_year_info.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -40,6 +41,7 @@ export class BatchService implements OnApplicationBootstrap {
   private incoStataInfoResData: Array<IIncoStatInfoRes> = [];
   private stockPriceInfoResData: Array<IStockPriceInfoRes> = [];
   private stockPrice15thInfoResData: Array<IStockPriceInfoRes> = [];
+  private stockPriceYearInfoResData: Array<IStockPriceInfoRes> = [];
   private stockMarketIndexInfoResData: Array<IMarketIndexInfoRes> = [];
   private derivationMarketIndexInfoResData: Array<IMarketIndexInfoRes> = [];
 
@@ -443,16 +445,100 @@ export class BatchService implements OnApplicationBootstrap {
           });
 
           this.logger.log(`Success SpoStockPrice15thInfo Update ${basDt}`);
-          await this.getMarketIndexInfo();
+          await this.updateStockPriceYearInfo();
         } else {
           this.logger.log(
             'Undefined Response from stockPrice15thInfoResData API',
             this.stockPrice15thInfoResData,
           );
+          await this.updateStockPriceYearInfo();
         }
       } catch (error) {
         this.logger.error(
           'Error fetching data from getStockPriceThrMonInfo API:',
+          error,
+        );
+      }
+    }
+  }
+
+  // 1년 전 주식 가격 정보
+  async updateStockPriceYearInfo() {
+    if (this.shouldRunBatch) {
+      const basDt = StringUtil.getYearDate();
+      console.log(basDt);
+      try {
+        const stockPriceYearInfoRes: any = await axios.get(
+          `${
+            OpenApi.GetStockPriceInfoService
+          }?serviceKey=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_KEY',
+          )}&basDt=${basDt}&resultType=${this.configService.get<string>(
+            'RESULT_TYPE',
+          )}&pageNo=${this.configService.get<string>(
+            'PAGE_NO',
+          )}&numOfRows=${this.configService.get<string>(
+            'GET_KRX_LIST_INFO_ROW',
+          )}`,
+        );
+        this.stockPriceYearInfoResData =
+          stockPriceYearInfoRes.data?.response?.body?.items?.item;
+        if (
+          StringUtil.isNotEmpty(this.stockPriceYearInfoResData) &&
+          _.isArray(this.stockPriceYearInfoResData)
+        ) {
+          await this.dataSource.transaction(async (manager) => {
+            const stockInfos = await manager.find(SpoStockInfo);
+            for (const stockInfo of stockInfos) {
+              const matchingStockPriceYearInfos = _.filter(
+                this.stockPriceYearInfoResData,
+                (stockPriceYearInfo) =>
+                  'A' + stockPriceYearInfo.srtnCd === stockInfo.srtnCd,
+              );
+              if (matchingStockPriceYearInfos) {
+                for (const matchingStockPriceYearInfo of matchingStockPriceYearInfos) {
+                  const stockPriceYearInfo = new SpoStockPriceYearInfo();
+                  stockPriceYearInfo.stockInfo = stockInfo;
+                  stockPriceYearInfo.stockInfoSequence =
+                    stockInfo.stockInfoSequence;
+                  stockPriceYearInfo.srtnCd = matchingStockPriceYearInfo.srtnCd;
+                  stockPriceYearInfo.itmsNm = matchingStockPriceYearInfo.itmsNm;
+                  stockPriceYearInfo.clpr = matchingStockPriceYearInfo.clpr;
+                  stockPriceYearInfo.fltRt = matchingStockPriceYearInfo.fltRt;
+                  stockPriceYearInfo.basDt = matchingStockPriceYearInfo.basDt;
+                  stockPriceYearInfo.vs = matchingStockPriceYearInfo.vs;
+                  stockPriceYearInfo.mkp = matchingStockPriceYearInfo.mkp;
+                  stockPriceYearInfo.hipr = matchingStockPriceYearInfo.hipr;
+                  stockPriceYearInfo.lopr = matchingStockPriceYearInfo.lopr;
+                  stockPriceYearInfo.trqu = matchingStockPriceYearInfo.trqu;
+                  stockPriceYearInfo.trPrc = matchingStockPriceYearInfo.trPrc;
+                  stockPriceYearInfo.lstgStCnt =
+                    matchingStockPriceYearInfo.lstgStCnt;
+                  stockPriceYearInfo.mrktTotAmt =
+                    matchingStockPriceYearInfo.mrktTotAmt;
+
+                  await manager.upsert(
+                    SpoStockPriceYearInfo,
+                    stockPriceYearInfo,
+                    ['stockPriceSequence'],
+                  );
+                }
+              }
+            }
+          });
+
+          this.logger.log(`Success SpoStockPriceYearInfo Update ${basDt}`);
+          await this.getMarketIndexInfo();
+        } else {
+          this.logger.log(
+            'Undefined Response from stockPriceYearInfoResData API',
+            this.stockPriceYearInfoResData,
+          );
+          await this.getMarketIndexInfo();
+        }
+      } catch (error) {
+        this.logger.error(
+          'Error fetching data from updateStockPriceYearInfo API:',
           error,
         );
       }

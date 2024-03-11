@@ -9,10 +9,10 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { SpoStockInfo } from './spo_stock_info.entity';
 
-@Entity({ name: 'SPO_STK_PRIC_15TH_INFO' })
-export class SpoStockPrice15thInfo {
+@Entity({ name: 'SPO_STK_PRIC_YEAR_INFO' })
+export class SpoStockPriceYearInfo {
   @PrimaryGeneratedColumn({ name: 'STK_PRC_SEQ' })
-  @ApiProperty({ description: '15일 주식 가격정보', example: 1 })
+  @ApiProperty({ description: '1년 주식 가격정보', example: 1 })
   stockPriceSequence: number;
 
   @Column({ name: 'STK_INFO_SEQ' })

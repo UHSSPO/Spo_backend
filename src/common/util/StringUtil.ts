@@ -87,6 +87,16 @@ export default class StringUtil {
     return date;
   }
 
+  public static getYearDate(dateTimeFormat?: string) {
+    const days = 365;
+    const date = DateTime.local()
+      .setLocale('ko')
+      .minus({ days: days })
+      .toFormat(dateTimeFormat || 'yyyyLLdd');
+
+    return date;
+  }
+
   public static getHoliday(str: string) {
     const holiday = {
       '2023': {
