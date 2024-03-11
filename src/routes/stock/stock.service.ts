@@ -105,7 +105,7 @@ export class StockService {
       });
     }
 
-    const stockInfo = await this.stockInfoRepository
+    const stockInfo: SpoStockInfo = await this.stockInfoRepository
       .createQueryBuilder('SSI')
       .leftJoinAndSelect('SSI.priceInfo', 'stockPriceInfo')
       .leftJoinAndSelect('SSI.prc15tnMonInfo', 'prc15tnMonInfo')

@@ -18,6 +18,7 @@ import { SpoInterestStock } from './spo_interest_stock.entity';
 import { SpoStockView } from './spo_stock_view.entity';
 import { SpoStockRisk } from './spo_stock_risk.entity';
 import { SpoEnterpriseInfo } from './spo_entpr_info.entity';
+import { SpoStockPriceYearInfo } from './spo_stock_price_year_info.entity';
 
 @Entity({ name: 'SPO_STK_INFO' })
 @Index('idx_crno', ['crno'], { unique: true })
@@ -87,6 +88,16 @@ export class SpoStockInfo {
     (prc15tnMonInfo) => prc15tnMonInfo.stockInfo,
   )
   prc15tnMonInfo: SpoStockPriceInfo[];
+
+  @ApiProperty({
+    description: '15일치 주식 데이터 정보',
+    type: [SpoStockPriceYearInfo],
+  })
+  @OneToMany(
+    () => SpoStockPriceYearInfo,
+    (prcYearInfo) => prcYearInfo.stockInfo,
+  )
+  prcYearInfo: SpoStockPriceYearInfo;
 
   @ApiProperty({
     description: '기업평가항목 정보',
