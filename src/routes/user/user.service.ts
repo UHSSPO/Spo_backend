@@ -1,12 +1,23 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ChangePasswordReqBody, InvestPropensityReqBody } from './dto/req.dto';
+import {
+  ChangeNickNameReqBody,
+  ChangePasswordReqBody,
+  InvestPropensityReqBody,
+} from './dto/req.dto';
 import { DataSource, Repository } from 'typeorm';
 import { SpoUser } from '../../entity/spo_user.entity';
 import { IUserInterface } from '../../common/interface/user.interface';
-import { ChangePasswordRes, SelectMyInfoRes } from './dto/res.dto';
+import {
+  ChangeNickNameRes,
+  ChangePasswordRes,
+  SelectMyInfoRes,
+} from './dto/res.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
+import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
+import { SpoInterestStock } from '../../entity/spo_interest_stock.entity';
 
 @Injectable()
 export class UserService {
@@ -15,6 +26,8 @@ export class UserService {
     private configService: ConfigService,
     @InjectRepository(SpoUser)
     private userRepository: Repository<SpoUser>,
+    @InjectRepository(SpoStockPriceInfo)
+    private stockRepository: Repository<SpoStockPriceInfo>,
   ) {}
 
   async userInvestPropensity(
@@ -55,13 +68,27 @@ export class UserService {
   }
 
   async getUserInfo(user: IUserInterface): Promise<SelectMyInfoRes> {
-    const userInfo = await this.userRepository
-      .createQueryBuilder('SPU')
-      .leftJoinAndSelect('SPU.interestStock', 'interestStock')
-      .where('SPU.USR_SEQ = :userSequence', {
+    const userInfo: SpoUser = await this.userRepository.findOne({
+      where: {
         userSequence: user.userSequence,
-      })
-      .getOne();
+      },
+    });
+
+    const interestStock = await this.stockRepository
+      .createQueryBuilder('SSPI')
+      .select([
+        'SSPI.STK_INFO_SEQ as stockInfoSequence',
+        'SSPI.ITMS_NM as itmsNm',
+        'SSPI.CLPR as clpr',
+        'SSPI.FLT_RT as fltRt',
+        'SSPI.TRQU as trqu',
+        'SSPI.MRKT_TOT_AMT as mrktTotAmt',
+      ])
+      .innerJoin(SpoStockInfo, 'SSI', 'SSPI.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
+      .innerJoin(SpoInterestStock, 'SIS', 'SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
+      .where(`SIS.USR_SEQ = ${user.userSequence}`)
+      .orderBy('SIS.UPDT_AT', 'ASC')
+      .getRawMany();
 
     if (userInfo) {
       return {
@@ -72,7 +99,7 @@ export class UserService {
         userRole: userInfo.userRole,
         nickName: userInfo.nickName,
         dateOfBirth: userInfo.dateOfBirth,
-        interestStock: userInfo.interestStock,
+        interestStock: interestStock,
       };
     } else {
       throw new HttpException(
@@ -83,7 +110,7 @@ export class UserService {
   }
 
   async changePassword(
-    reqBody: ChangePasswordReqBody,
+    { beforePassword, afterPassword }: ChangePasswordReqBody,
     userSequence: number,
   ): Promise<ChangePasswordRes> {
     const userInfo: SpoUser = await this.userRepository.findOne({
@@ -91,12 +118,10 @@ export class UserService {
     });
 
     if (userInfo) {
-      const match = await compare(reqBody.beforePassword, userInfo.pwd);
+      const match = await compare(beforePassword, userInfo.pwd);
       if (match) {
         await this.dataSource.transaction(async (manager) => {
-          const encryptedPassword = await this.encryptPassword(
-            reqBody.afterPassword,
-          );
+          const encryptedPassword = await this.encryptPassword(afterPassword);
 
           await manager.update(
             SpoUser,
@@ -122,5 +147,31 @@ export class UserService {
       10,
     );
     return hash(password, numberSalt);
+  }
+
+  async changeNickName(
+    { changeNickName }: ChangeNickNameReqBody,
+    userSequence: number,
+  ): Promise<ChangeNickNameRes> {
+    await this.dataSource.transaction(async (manager) => {
+      const user = await manager.findOne(SpoUser, {
+        where: { userSequence: userSequence },
+      });
+
+      if (user) {
+        await manager.update(
+          SpoUser,
+          { userSequence: userSequence },
+          { nickName: changeNickName },
+        );
+      } else {
+        throw new HttpException(
+          '존재하지 않는 유저입니다.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+    });
+
+    return { changeNickNameYn: 'Y' };
   }
 }

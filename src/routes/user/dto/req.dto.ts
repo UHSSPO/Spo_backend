@@ -29,3 +29,13 @@ export class ChangePasswordReqBody {
   })
   afterPassword: string;
 }
+
+export class ChangeNickNameReqBody {
+  @IsNotEmpty({ message: '변경할 닉네임은 필수 입니다.' })
+  @ApiProperty({
+    example: '성욱',
+    description: '변경 닉네임',
+    required: true,
+  })
+  changeNickName: string;
+}

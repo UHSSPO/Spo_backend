@@ -9,12 +9,17 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
+  ChangeNickNameRes,
   ChangePasswordRes,
   InvestPropensityRes,
   SelectMyInfoRes,
 } from './dto/res.dto';
 import { UserService } from './user.service';
-import { ChangePasswordReqBody, InvestPropensityReqBody } from './dto/req.dto';
+import {
+  ChangeNickNameReqBody,
+  ChangePasswordReqBody,
+  InvestPropensityReqBody,
+} from './dto/req.dto';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @ApiTags('user')
@@ -51,6 +56,23 @@ export class UserController {
     @Param('userSequence') userSequence: number,
   ): Promise<ChangePasswordRes> {
     return this.userService.changePassword(reqBody, userSequence);
+  }
+
+  @Put('/change-nickName/:userSequence')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: ChangeNickNameRes,
+  })
+  @ApiOperation({
+    summary: '닉네임 변경',
+  })
+  async changeNickName(
+    @Body() reqBody: ChangeNickNameReqBody,
+    @Param('userSequence') userSequence: number,
+  ): Promise<ChangeNickNameRes> {
+    return this.userService.changeNickName(reqBody, userSequence);
   }
 
   @Put('/invest-propensity/:userSequence')
