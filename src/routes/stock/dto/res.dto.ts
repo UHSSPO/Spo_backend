@@ -162,4 +162,18 @@ export class StockInfoResDto extends OmitType(SpoStockInfo, [
   'stockView',
   'interestStock',
   'enterpriseScores',
-] as const) {}
+] as const) {
+  @ApiProperty({
+    example: 15,
+    description: '장기투자 과거데이터 수익률',
+    required: false,
+  })
+  pastLongRate?: number;
+
+  @ApiProperty({
+    example: 15,
+    description: '단기투자 과거데이터 수익률',
+    required: false,
+  })
+  pastShortRate?: number;
+}

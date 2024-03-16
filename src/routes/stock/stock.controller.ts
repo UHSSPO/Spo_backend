@@ -22,7 +22,6 @@ import { StockService } from './stock.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { InterestRequestDto } from './dto/req.dto';
 import { JwtAllGuard } from '../../auth/jwt-all.guard';
-import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 
 @ApiTags('stock')
 @Controller('stock')

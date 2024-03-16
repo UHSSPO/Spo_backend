@@ -3,6 +3,7 @@ import {
   HomeStockInfo,
   MarketIndexResDto,
   SearchStockInfo,
+  StockInfoResDto,
   ThemeStockInfo,
   UpdateInterestStock,
 } from './dto/res.dto';
@@ -54,7 +55,9 @@ export class StockService {
       .getRawMany();
   }
 
-  async getStockInfo(stockInfoSequence: number): Promise<SpoStockInfo> {
+  async getStockInfo(stockInfoSequence: number): Promise<StockInfoResDto> {
+    let pastLongRate = 0;
+    let pastShortRate = 0;
     const enterpriseInfo = await this.enterpriseInfoRepository.findOne({
       where: {
         stockInfoSequence: stockInfoSequence,
@@ -113,6 +116,7 @@ export class StockService {
       .leftJoinAndSelect('SSI.incoInfo', 'incoInfo')
       .leftJoinAndSelect('SSI.enterpriseCategories', 'enterpriseCategories')
       .leftJoinAndSelect('SSI.enterpriseInfo', 'enterpriseInfo')
+      .leftJoinAndSelect('SSI.prcYearInfo', 'prcYearInfo')
       .where('SSI.stockInfoSequence = :stockInfoSequence', {
         stockInfoSequence,
       })
@@ -129,7 +133,24 @@ export class StockService {
       );
     });
 
-    return stockInfo;
+    if (stockInfo.priceInfo.mrktTotAmt >= 10000000000000) {
+      pastLongRate =
+        ((stockInfo.priceInfo.clpr - stockInfo.prcYearInfo.clpr) /
+          stockInfo.prcYearInfo.clpr) *
+        100;
+    } else {
+      pastShortRate =
+        ((stockInfo.priceInfo.clpr -
+          stockInfo.prc15tnMonInfo[stockInfo.prc15tnMonInfo.length - 1].clpr) /
+          stockInfo.prc15tnMonInfo[stockInfo.prc15tnMonInfo.length - 1].clpr) *
+        100;
+    }
+
+    return {
+      ...stockInfo,
+      pastLongRate,
+      pastShortRate,
+    };
   }
 
   async getHomeMarketIndex(): Promise<MarketIndexResDto[]> {

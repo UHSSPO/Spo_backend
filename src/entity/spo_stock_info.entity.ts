@@ -91,12 +91,9 @@ export class SpoStockInfo {
 
   @ApiProperty({
     description: '15일치 주식 데이터 정보',
-    type: [SpoStockPriceYearInfo],
+    type: SpoStockPriceYearInfo,
   })
-  @OneToMany(
-    () => SpoStockPriceYearInfo,
-    (prcYearInfo) => prcYearInfo.stockInfo,
-  )
+  @OneToOne(() => SpoStockPriceYearInfo, (prcYearInfo) => prcYearInfo.stockInfo)
   prcYearInfo: SpoStockPriceYearInfo;
 
   @ApiProperty({
