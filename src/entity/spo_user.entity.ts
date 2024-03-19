@@ -8,6 +8,8 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { SpoInterestStock } from './spo_interest_stock.entity';
+import { SpoBoard } from './spo_board.entity';
+import { SpoBoardComment } from './spo_board_comment.entity';
 
 @Entity({ name: 'SPO_USR' })
 export class SpoUser {
@@ -58,4 +60,12 @@ export class SpoUser {
   @OneToMany(() => SpoInterestStock, (interestStock) => interestStock.user)
   @ApiProperty({ description: '관심주식', type: [SpoInterestStock] })
   interestStock: SpoInterestStock[];
+
+  @OneToMany(() => SpoBoard, (board) => board.user)
+  @ApiProperty({ description: '게시판', type: [SpoBoard] })
+  board: SpoBoard[];
+
+  @OneToMany(() => SpoBoardComment, (boardComment) => boardComment.user)
+  @ApiProperty({ description: '게시판', type: [SpoBoardComment] })
+  boardComment: SpoBoardComment[];
 }
