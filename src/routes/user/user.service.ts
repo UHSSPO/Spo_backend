@@ -24,8 +24,10 @@ export class UserService {
   constructor(
     private dataSource: DataSource,
     private configService: ConfigService,
+
     @InjectRepository(SpoUser)
     private userRepository: Repository<SpoUser>,
+
     @InjectRepository(SpoStockPriceInfo)
     private stockRepository: Repository<SpoStockPriceInfo>,
   ) {}

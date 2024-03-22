@@ -34,6 +34,8 @@ export class UserInfoRes extends OmitType(SpoUser, [
   'deleteYn',
   'deleteAt',
   'interestStock',
+  'board',
+  'boardComment',
 ]) {}
 
 export class PriceInfoRes {

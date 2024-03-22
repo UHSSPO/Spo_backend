@@ -625,6 +625,7 @@ export class BatchService implements OnApplicationBootstrap {
             'Undefined Response from getStockPriceInfo API',
             combinedMarketIndexInfos,
           );
+          await this.updateEnterpriseCategory();
         }
       } catch (error) {
         this.logger.error(

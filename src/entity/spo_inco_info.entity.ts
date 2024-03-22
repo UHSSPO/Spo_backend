@@ -81,7 +81,7 @@ export class SpoIncoInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @ManyToOne(() => SpoStockInfo, { eager: true }) // SpoStockInfo 엔터티와의 다대일(ManyToOne) 관계를 정의합니다.
+  @ManyToOne(() => SpoStockInfo, { eager: true })
   @JoinColumn({
     name: 'STK_INFO_SEQ',
     referencedColumnName: 'stockInfoSequence',

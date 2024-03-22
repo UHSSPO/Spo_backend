@@ -2,7 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -75,7 +75,7 @@ export class SpoStockPriceYearInfo {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @ManyToOne(() => SpoStockInfo, {
+  @OneToOne(() => SpoStockInfo, {
     cascade: true,
   })
   @JoinColumn({
