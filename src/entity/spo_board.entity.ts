@@ -34,6 +34,10 @@ export class SpoBoard {
   @ApiProperty({ description: '닉네임', example: '성욱' })
   nickName: string;
 
+  @Column({ name: 'DELE_YN' })
+  @ApiProperty({ description: '삭제여부', example: 'Y' })
+  deleteYn: string;
+
   @CreateDateColumn({ name: 'CRET_AT' })
   @ApiProperty({ description: '생성 일자', example: '20231218' })
   createAt: Date;
