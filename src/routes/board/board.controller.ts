@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateBoardRes, DeleteBoardRes, UpdateBoardRes } from './dto/res.dto';
 import { BoardService } from './board.service';
 import { CreateBoardReq, UpdateBoardReq } from './dto/req.dto';
@@ -29,6 +29,9 @@ export class BoardController {
     description: 'Success',
     type: [SpoBoard],
   })
+  @ApiOperation({
+    summary: '게시판 전체 조회 api',
+  })
   async getAllBoard(): Promise<SpoBoard[]> {
     return await this.boardService.getAllBoard();
   }
@@ -39,6 +42,9 @@ export class BoardController {
     status: 200,
     description: 'Success',
     type: SpoBoard,
+  })
+  @ApiOperation({
+    summary: '게시판 상세 조회 api',
   })
   async getBoardDetail(
     @Param('boardSequence') boardSequence: number,
@@ -53,6 +59,9 @@ export class BoardController {
     description: 'Success',
     type: CreateBoardRes,
   })
+  @ApiOperation({
+    summary: '게시판 글 생성 api',
+  })
   async createBoard(
     @Body() reqBody: CreateBoardReq,
     @Request() req,
@@ -66,6 +75,9 @@ export class BoardController {
     status: 200,
     description: 'Success',
     type: UpdateBoardRes,
+  })
+  @ApiOperation({
+    summary: '게시판 글 수정 api',
   })
   async updateBoard(
     @Param('boardSequence') boardSequence: number,
@@ -85,6 +97,9 @@ export class BoardController {
     status: 200,
     description: 'Success',
     type: DeleteBoardRes,
+  })
+  @ApiOperation({
+    summary: '게시판 글 삭제 api',
   })
   async deleteBoard(
     @Param('boardSequence') boardSequence: number,
