@@ -26,3 +26,30 @@ export class DeleteBoardRes {
   })
   deleteYn: string;
 }
+
+export class CreateBoardCommentRes {
+  @ApiProperty({
+    example: 'Y',
+    description: '등록여부',
+    required: true,
+  })
+  createYn: string;
+}
+
+export class UpdateBoarCommentRes {
+  @ApiProperty({
+    example: 'Y',
+    description: '업데이트 여부',
+    required: true,
+  })
+  updateYn: string;
+}
+
+export class DeleteBoardCommentRes {
+  @ApiProperty({
+    example: 'Y',
+    description: '삭제여부',
+    required: true,
+  })
+  deleteYn: string;
+}

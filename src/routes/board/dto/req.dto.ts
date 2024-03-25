@@ -45,3 +45,33 @@ export class UpdateBoardReq {
   })
   userSequence: number;
 }
+
+export class CreateBoardCommentReq {
+  @IsNotEmpty({ message: '댓글 내용을 입력해 주세요.' })
+  @MaxLength(50, { message: '댓글은 50자 이내로 작성해 주세요.' })
+  @ApiProperty({
+    example: '댓글입니다..',
+    description: '댓글',
+    required: true,
+  })
+  comment: string;
+}
+
+export class UpdateBoardCommentReq {
+  @IsNotEmpty({ message: '댓글 내용을 입력해 주세요.' })
+  @MaxLength(50, { message: '댓글은 50자 이내로 작성해 주세요.' })
+  @ApiProperty({
+    example: '댓글입니다..',
+    description: '댓글',
+    required: true,
+  })
+  comment: string;
+
+  @IsNotEmpty()
+  @ApiProperty({
+    example: 1,
+    description: '유저 일련번호',
+    required: true,
+  })
+  userSequence: string;
+}

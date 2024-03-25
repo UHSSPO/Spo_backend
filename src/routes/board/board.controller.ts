@@ -13,9 +13,21 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateBoardRes, DeleteBoardRes, UpdateBoardRes } from './dto/res.dto';
+import {
+  CreateBoardCommentRes,
+  CreateBoardRes,
+  DeleteBoardCommentRes,
+  DeleteBoardRes,
+  UpdateBoarCommentRes,
+  UpdateBoardRes,
+} from './dto/res.dto';
 import { BoardService } from './board.service';
-import { CreateBoardReq, UpdateBoardReq } from './dto/req.dto';
+import {
+  CreateBoardCommentReq,
+  CreateBoardReq,
+  UpdateBoardCommentReq,
+  UpdateBoardReq,
+} from './dto/req.dto';
 import { SpoBoard } from '../../entity/spo_board.entity';
 
 @ApiTags('board')
@@ -69,6 +81,28 @@ export class BoardController {
     return await this.boardService.createBoard(reqBody, req.user);
   }
 
+  @Post('/comment/:boardSequence')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: CreateBoardCommentRes,
+  })
+  @ApiOperation({
+    summary: '게시판 댓글 등록 api',
+  })
+  async createBoardComment(
+    @Body() reqBdoy: CreateBoardCommentReq,
+    @Param('boardSequence') boardSequence: number,
+    @Request() req,
+  ): Promise<CreateBoardCommentRes> {
+    return await this.boardService.createBoardComment(
+      reqBdoy,
+      boardSequence,
+      req.user,
+    );
+  }
+
   @Put('/:boardSequence')
   @UseGuards(JwtAuthGuard)
   @ApiResponse({
@@ -91,6 +125,31 @@ export class BoardController {
     }
   }
 
+  @Put('/comment/:boardCommentSequence')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: UpdateBoarCommentRes,
+  })
+  @ApiOperation({
+    summary: '게시판 댓글 수정 api',
+  })
+  async updateBoardComment(
+    @Param('boardCommentSequence') boardCommentSequence: number,
+    @Body() reqBody: UpdateBoardCommentReq,
+    @Request() req,
+  ): Promise<UpdateBoarCommentRes> {
+    if (req.user.userSequence === reqBody.userSequence) {
+      return await this.boardService.updateBoardComment(
+        reqBody,
+        boardCommentSequence,
+      );
+    } else {
+      throw new HttpException('권한이 없습니다.', HttpStatus.UNAUTHORIZED);
+    }
+  }
+
   @Delete('/:boardSequence')
   @UseGuards(JwtAuthGuard)
   @ApiResponse({
@@ -106,5 +165,21 @@ export class BoardController {
     @Request() req,
   ): Promise<DeleteBoardRes> {
     return await this.boardService.deleteBoard(req.user, boardSequence);
+  }
+
+  @Delete('/comment/:boardCommentSequence')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: DeleteBoardCommentRes,
+  })
+  @ApiOperation({
+    summary: '게시판 댓글 삭제 api',
+  })
+  async deleteBoardComment(
+    @Param('boardCommentSequence') boardCommentSequence: number,
+  ): Promise<DeleteBoardCommentRes> {
+    return await this.boardService.deleteBoardComment(boardCommentSequence);
   }
 }

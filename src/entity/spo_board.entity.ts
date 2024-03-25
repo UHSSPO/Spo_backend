@@ -34,7 +34,7 @@ export class SpoBoard {
   @ApiProperty({ description: '닉네임', example: '성욱' })
   nickName: string;
 
-  @Column({ name: 'DELE_YN' })
+  @Column({ name: 'DELE_YN', default: 'N' })
   @ApiProperty({ description: '삭제여부', example: 'Y' })
   deleteYn: string;
 
