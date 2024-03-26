@@ -33,7 +33,7 @@ export class BoardService {
   private logger = new Logger(BoardService.name);
 
   async getAllBoard(): Promise<SpoBoard[]> {
-    return this.boardRepository.find({
+    return await this.boardRepository.find({
       where: { deleteYn: 'N' },
       order: {
         createAt: 'DESC',
@@ -45,9 +45,10 @@ export class BoardService {
     return await this.boardRepository
       .createQueryBuilder('SB')
       .select()
-      .leftJoinAndSelect('SB.boardComment', 'boardComment')
-      .where('SB.boardSequence = :boardSequence', {
-        boardSequence,
+      .leftJoinAndSelect('SB.boardComment', 'SBC')
+      .where('SB.boardSequence = :boardSequence && SBC.deleteYn = :deleteYn ', {
+        boardSequence: boardSequence,
+        deleteYn: 'N',
       })
       .getOne();
   }
