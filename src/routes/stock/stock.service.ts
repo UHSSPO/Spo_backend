@@ -134,16 +134,24 @@ export class StockService {
     });
 
     if (stockInfo.priceInfo.mrktTotAmt >= 10000000000000) {
-      pastLongRate =
-        ((stockInfo.priceInfo.clpr - stockInfo.prcYearInfo.clpr) /
-          stockInfo.prcYearInfo.clpr) *
-        100;
+      pastLongRate = parseFloat(
+        (
+          ((stockInfo.priceInfo.clpr - stockInfo.prcYearInfo.clpr) /
+            stockInfo.prcYearInfo.clpr) *
+          100
+        ).toFixed(2),
+      );
     } else {
-      pastShortRate =
-        ((stockInfo.priceInfo.clpr -
-          stockInfo.prc15tnMonInfo[stockInfo.prc15tnMonInfo.length - 1].clpr) /
-          stockInfo.prc15tnMonInfo[stockInfo.prc15tnMonInfo.length - 1].clpr) *
-        100;
+      pastShortRate = parseFloat(
+        (
+          ((stockInfo.priceInfo.clpr -
+            stockInfo.prc15tnMonInfo[stockInfo.prc15tnMonInfo.length - 1]
+              .clpr) /
+            stockInfo.prc15tnMonInfo[stockInfo.prc15tnMonInfo.length - 1]
+              .clpr) *
+          100
+        ).toFixed(2),
+      );
     }
 
     return {
