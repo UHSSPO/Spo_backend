@@ -46,10 +46,13 @@ export class BoardService {
       .createQueryBuilder('SB')
       .select()
       .leftJoinAndSelect('SB.boardComment', 'SBC')
-      .where('SB.boardSequence = :boardSequence && SBC.deleteYn = :deleteYn ', {
-        boardSequence: boardSequence,
-        deleteYn: 'N',
-      })
+      .where(
+        'SB.boardSequence = :boardSequence AND SBC.deleteYn = :deleteYn ',
+        {
+          boardSequence: boardSequence,
+          deleteYn: 'N',
+        },
+      )
       .getOne();
   }
 
