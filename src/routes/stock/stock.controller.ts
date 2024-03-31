@@ -22,6 +22,7 @@ import { StockService } from './stock.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { InterestRequestDto } from './dto/req.dto';
 import { JwtAllGuard } from '../../auth/jwt-all.guard';
+import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 
 @ApiTags('stock')
 @Controller('stock')
@@ -165,6 +166,20 @@ export class StockController {
   })
   async getShortInvestRecommendAll(@Request() req): Promise<HomeStockInfo[]> {
     return await this.stockService.getShortInvestRecommendAll(req.user);
+  }
+
+  @Get('/recommend/personal')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: [SpoStockInfo],
+  })
+  @ApiOperation({
+    summary: '개인추천 api',
+  })
+  async getPersonalRecommend(@Request() req): Promise<SpoStockInfo[]> {
+    return await this.stockService.getPersonalRecommend(req.user);
   }
 
   @Post('/interest')

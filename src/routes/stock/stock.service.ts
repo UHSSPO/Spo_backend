@@ -21,6 +21,8 @@ import { SpoEnterpriseInfo } from '../../entity/spo_entpr_info.entity';
 import axios from 'axios';
 import OpenApi from '../../common/openApi/openApi';
 import { ConfigService } from '@nestjs/config';
+import { SpoUser } from '../../entity/spo_user.entity';
+import { SpoStockRisk } from '../../entity/spo_stock_risk.entity';
 
 @Injectable()
 export class StockService {
@@ -38,6 +40,9 @@ export class StockService {
 
     @InjectRepository(SpoStockPriceInfo)
     private stockPriceInfoRepository: Repository<SpoStockPriceInfo>,
+
+    @InjectRepository(SpoUser)
+    private userRepository: Repository<SpoUser>,
 
     private dataSource: DataSource,
   ) {}
@@ -450,5 +455,25 @@ export class StockService {
       increaseStock: increaseStock,
       declineStock: declineStock,
     };
+  }
+
+  async getPersonalRecommend(user: IUserInterface): Promise<SpoStockInfo[]> {
+    const userInfo = await this.userRepository.findOne({
+      where: { userSequence: user.userSequence },
+    });
+    return await this.stockInfoRepository
+      .createQueryBuilder('SSI')
+      .innerJoin(SpoStockRisk, 'SSR', 'SSR.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
+      .innerJoin(
+        SpoEnterpriseScore,
+        'SES',
+        'SES.STK_INFO_SEQ = SSI.STK_INFO_SEQ',
+      )
+      .where('SSR.RISK = :investPropensity', {
+        investPropensity: userInfo.investPropensity,
+      })
+      .orderBy('SES.TOTL_SCOR', 'DESC')
+      .limit(3)
+      .getMany();
   }
 }
