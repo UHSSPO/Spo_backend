@@ -177,3 +177,17 @@ export class StockInfoResDto extends OmitType(SpoStockInfo, [
   })
   pastShortRate?: number;
 }
+
+export class CommendPersonalStock extends OmitType(SpoStockInfo, [
+  'stockRisk',
+  'stockView',
+  'interestStock',
+  'enterpriseScores',
+  'summFinaInfo',
+  'incoInfo',
+  'priceInfo',
+  'prc15tnMonInfo',
+  'prcYearInfo',
+  'enterpriseCategories',
+  'enterpriseInfo',
+] as const) {}

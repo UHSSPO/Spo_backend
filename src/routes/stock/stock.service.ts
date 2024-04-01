@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  CommendPersonalStock,
   HomeStockInfo,
   MarketIndexResDto,
   SearchStockInfo,
@@ -457,7 +458,9 @@ export class StockService {
     };
   }
 
-  async getPersonalRecommend(user: IUserInterface): Promise<SpoStockInfo[]> {
+  async getPersonalRecommend(
+    user: IUserInterface,
+  ): Promise<CommendPersonalStock[]> {
     const userInfo = await this.userRepository.findOne({
       where: { userSequence: user.userSequence },
     });

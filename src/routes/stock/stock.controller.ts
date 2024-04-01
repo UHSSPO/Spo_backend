@@ -16,6 +16,7 @@ import {
   UpdateInterestStock,
   SearchStockInfo,
   StockInfoResDto,
+  CommendPersonalStock,
 } from './dto/res.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StockService } from './stock.service';
@@ -173,12 +174,12 @@ export class StockController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: [SpoStockInfo],
+    type: [CommendPersonalStock],
   })
   @ApiOperation({
     summary: '개인추천 api',
   })
-  async getPersonalRecommend(@Request() req): Promise<SpoStockInfo[]> {
+  async getPersonalRecommend(@Request() req): Promise<CommendPersonalStock[]> {
     return await this.stockService.getPersonalRecommend(req.user);
   }
 
