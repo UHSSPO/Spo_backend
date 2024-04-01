@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
@@ -10,6 +11,9 @@ import { Exclude } from 'class-transformer';
 import { SpoInterestStock } from './spo_interest_stock.entity';
 import { SpoBoard } from './spo_board.entity';
 import { SpoBoardComment } from './spo_board_comment.entity';
+import { SpoUserInvestment } from './spo_user_investment.entity';
+import { SpoUserInvestmentStock } from './spo_user_investment_stock.entity';
+import { SpoUserInvestmentHistory } from './spo_user_investment_history.entity';
 
 @Entity({ name: 'SPO_USR' })
 export class SpoUser {
@@ -68,4 +72,28 @@ export class SpoUser {
   @OneToMany(() => SpoBoardComment, (boardComment) => boardComment.user)
   @ApiProperty({ description: '게시판', type: [SpoBoardComment] })
   boardComment: SpoBoardComment[];
+
+  @OneToMany(
+    () => SpoUserInvestmentStock,
+    (userInvestmentStock) => userInvestmentStock.user,
+  )
+  @ApiProperty({
+    description: '유저 투자 종목 정보',
+    type: [SpoUserInvestmentStock],
+  })
+  userInvestmentStock: SpoUserInvestmentStock[];
+
+  @OneToMany(
+    () => SpoUserInvestmentHistory,
+    (userInvestmentHistory) => userInvestmentHistory.user,
+  )
+  @ApiProperty({
+    description: '유저 투자 내역',
+    type: [SpoUserInvestmentHistory],
+  })
+  userInvestmentHistory: SpoUserInvestmentHistory[];
+
+  @OneToOne(() => SpoUserInvestment, (userInvestment) => userInvestment.user)
+  @ApiProperty({ description: '유저 투자 정보', type: SpoUserInvestment })
+  userInvestment: SpoUserInvestment;
 }

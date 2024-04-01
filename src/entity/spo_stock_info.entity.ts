@@ -19,6 +19,8 @@ import { SpoStockView } from './spo_stock_view.entity';
 import { SpoStockRisk } from './spo_stock_risk.entity';
 import { SpoEnterpriseInfo } from './spo_entpr_info.entity';
 import { SpoStockPriceYearInfo } from './spo_stock_price_year_info.entity';
+import { SpoBoardComment } from './spo_board_comment.entity';
+import { SpoUserInvestmentStock } from './spo_user_investment_stock.entity';
 
 @Entity({ name: 'SPO_STK_INFO' })
 @Index('idx_crno', ['crno'], { unique: true })
@@ -114,6 +116,12 @@ export class SpoStockInfo {
 
   @OneToMany(() => SpoInterestStock, (interestStock) => interestStock.stockInfo)
   interestStock: SpoInterestStock[];
+
+  @OneToMany(
+    () => SpoUserInvestmentStock,
+    (userInvestmentStock) => userInvestmentStock.stockInfo,
+  )
+  userInvestmentStock: SpoUserInvestmentStock[];
 
   @OneToOne(() => SpoStockView, (stockView) => stockView.stockInfo)
   stockView: SpoStockView;
