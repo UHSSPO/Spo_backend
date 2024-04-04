@@ -22,15 +22,15 @@ export class SpoUserInvestment {
   @ApiProperty({ description: '현재금액', example: 1000000 })
   amount: number;
 
-  @Column({ name: 'BUY_AMT', type: 'bigint' })
+  @Column({ name: 'BUY_AMT', type: 'bigint', default: 0 })
   @ApiProperty({ description: '매수금액', example: 1000000 })
   buyAmount: number;
 
-  @Column({ name: 'PRFIT_LOS_SALES', type: 'bigint' })
+  @Column({ name: 'PRFIT_LOS_SALES', type: 'bigint', default: 0 })
   @ApiProperty({ description: '매매손익', example: 20000 })
   profitLossSales: number;
 
-  @Column({ name: 'VALU_AMT', type: 'bigint' })
+  @Column({ name: 'VALU_AMT', type: 'bigint', default: 0 })
   @ApiProperty({ description: '평가금액', example: 1002000 })
   valueAmount: number;
 

@@ -28,28 +28,28 @@ export class SpoUserInvestmentStock {
   @ApiProperty({ description: '보유수량', example: 12 })
   quantity: number;
 
-  @Column({ name: 'ITMS_VALU_AMT', type: 'bigint' })
+  @Column({ name: 'ITMS_VALU_AMT', type: 'bigint', default: 0 })
   @ApiProperty({ description: '평가금액', example: 1200000 })
   itemValueAmount: number;
 
-  @Column({ name: 'ITMS_BUY_AMT', type: 'bigint' })
+  @Column({ name: 'ITMS_BUY_AMT', type: 'bigint', default: null })
   @ApiProperty({ description: '매수금액', example: 1200000 })
   itemBuyAmount: number;
 
-  @Column({ name: 'ITMS_PRFIT', type: 'bigint' })
+  @Column({ name: 'ITMS_PRFIT', type: 'bigint', default: null })
   @ApiProperty({ description: '손익', example: 20000 })
   itemProfit: number;
 
-  @Column({ name: 'ITMS_FLR_RT' })
+  @Column({ name: 'ITMS_FLR_RT', default: null })
   @ApiProperty({ description: '수익률', example: 20 })
   itemFltRt: number;
 
-  @Column({ name: 'AVG_AMT', type: 'bigint' })
+  @Column({ name: 'AVG_AMT', type: 'bigint', default: null })
   @ApiProperty({ description: '평균단가', example: 1200000 })
   averageAmount: number;
 
   @CreateDateColumn({ name: 'CRET_AT' })
-  @ApiProperty({ description: '생 일자', example: '20231218' })
+  @ApiProperty({ description: '생성 일자', example: '20231218' })
   creatAt: Date;
 
   @ManyToOne(() => SpoUser, (user) => user.userSequence)

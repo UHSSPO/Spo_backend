@@ -32,7 +32,7 @@ export class SpoUserInvestmentHistory {
   quantity: number;
 
   @CreateDateColumn({ name: 'CRET_AT' })
-  @ApiProperty({ description: '생 일자', example: '20231218' })
+  @ApiProperty({ description: '생성 일자', example: '20231218' })
   creatAt: Date;
 
   @ManyToOne(() => SpoUser, (user) => user.userSequence)
