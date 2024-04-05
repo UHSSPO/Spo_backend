@@ -27,7 +27,7 @@ import { SpoStockRisk } from '../../entity/spo_stock_risk.entity';
 import { SpoEnterpriseInfo } from '../../entity/spo_entpr_info.entity';
 import { SpoStockPriceYearInfo } from '../../entity/spo_stock_price_year_info.entity';
 import { SpoUserInvestmentStock } from '../../entity/spo_user_investment_stock.entity';
-import { SpoUserInvestment } from '../../entity/spo_user_investment.entity';
+// import { SpoUserInvestment } from '../../entity/spo_user_investment.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -49,11 +49,11 @@ export class BatchService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
-      // process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-      this.shouldRunBatch = true;
+      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+    // this.shouldRunBatch = true;
   }
 
-  // 상장종목정보
+  // 상장 종목 정보 조회 배치
   @Cron('15 16 5 * *') // 매달 5일 오후 4시 15분에 실행
   async stockBatchTask() {
     if (this.shouldRunBatch) {
@@ -156,7 +156,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
-  // 기업 재무제표
+  // 기업 재무제표 배치
   async getFinaStatInfo() {
     if (this.shouldRunBatch) {
       // 공시일자가 3월말에서 4월말 사이라 수동 작업
@@ -224,7 +224,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
-  // 손익계산서
+  // 손익계산서 배치
   async getIncoStatInfo() {
     if (this.shouldRunBatch) {
       const bizYear = '2022';
@@ -297,7 +297,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
-  // 주식 시세 정보
+  // 주식 시세 정보 배치
   @Cron(CronExpression.EVERY_DAY_AT_3PM) // 매일 4시에 실행
   async getStockPriceInfo() {
     if (this.shouldRunBatch) {
@@ -384,7 +384,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
-  // 15일 주식 시세 정보
+  // 15일 주식 시세 정보 배치
   async getStockPrice15thInfo() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.get15thDate();
@@ -464,7 +464,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
-  // 1년 전 주식 가격 정보
+  // 1년 전 주식 가격 정보 배치
   async updateStockPriceYearInfo() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.getYearDate();
@@ -547,6 +547,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
+  // 지수 정보 배치
   async getMarketIndexInfo() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.getYesterdayDate();
@@ -637,6 +638,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
+  // 기업 평가 항목 배치
   async updateEnterpriseCategory() {
     if (this.shouldRunBatch) {
       await this.dataSource.transaction(async (manager) => {
@@ -803,6 +805,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
+  // 기업 평가 점수 배치
   async updateEnterpriseScore() {
     if (this.shouldRunBatch) {
       await this.dataSource.transaction(async (manager) => {
@@ -889,6 +892,7 @@ export class BatchService implements OnApplicationBootstrap {
     }
   }
 
+  // 주식 위험도 배치
   async updateStockRisk() {
     if (this.shouldRunBatch) {
       await this.dataSource.transaction(async (manager) => {
@@ -931,15 +935,19 @@ export class BatchService implements OnApplicationBootstrap {
           }
         }
       });
+      this.logger.log(`Success updateStockRisk Update`);
+      await this.updateVirtualProfit();
     }
   }
 
+  // 기업 기본정보 초기화 배치
   async deleteEnterpriseInfo() {
     await this.dataSource.transaction(async (manager) => {
       await manager.clear(SpoEnterpriseInfo);
     });
   }
 
+  // 가상투자 주식 수익률 배치
   async updateVirtualProfit() {
     await this.dataSource.transaction(async (manager) => {
       const userInvestmentStockList = await manager.find(
