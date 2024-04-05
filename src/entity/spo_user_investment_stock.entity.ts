@@ -40,7 +40,7 @@ export class SpoUserInvestmentStock {
   @ApiProperty({ description: '손익', example: 20000 })
   itemProfit: number;
 
-  @Column({ name: 'ITMS_FLR_RT', default: null })
+  @Column({ name: 'ITMS_FLR_RT', type: 'double', default: null })
   @ApiProperty({ description: '수익률', example: 20 })
   itemFltRt: number;
 

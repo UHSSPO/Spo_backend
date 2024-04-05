@@ -61,4 +61,9 @@ export class BatchController {
   deleteEnterpriseInfo() {
     return this.batchService.deleteEnterpriseInfo();
   }
+
+  @Get('/virtual-profit')
+  updateVirtualProfit() {
+    return this.batchService.updateVirtualProfit();
+  }
 }

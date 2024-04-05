@@ -34,6 +34,10 @@ export class SpoUserInvestment {
   @ApiProperty({ description: '평가금액', example: 1002000 })
   valueAmount: number;
 
+  @Column({ name: 'USR_FLR_RT', type: 'double', default: 0 })
+  @ApiProperty({ description: '수익률', example: 20 })
+  userFltRt: number;
+
   @ManyToOne(() => SpoUser, (user) => user.userSequence)
   @JoinColumn({
     name: 'USR_SEQ',

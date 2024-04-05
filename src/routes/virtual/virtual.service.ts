@@ -160,6 +160,69 @@ export class VirtualService {
             ]);
           } else {
             // 수익률 계산 후 추가 매수
+            await this.dataSource.transaction(async (manager) => {
+              const userInvestmentStock = await manager.findOne(
+                SpoUserInvestmentStock,
+                {
+                  where: {
+                    stockInfoSequence: stockInfoSequence,
+                    userSequence: userInfo.userSequence,
+                  },
+                },
+              );
+              if (userInvestmentStock) {
+                const updateQuantity = userInvestmentStock.quantity + quantity;
+                const itemBuyAmount =
+                  userInvestmentStock.itemBuyAmount +
+                  stockPriceInfo.clpr * quantity;
+                const itemProfit =
+                  stockPriceInfo.clpr * updateQuantity - itemBuyAmount;
+                const averageAmount = itemBuyAmount / updateQuantity;
+                const itemValueAmount = itemProfit + itemBuyAmount;
+                const itemFltRt = parseFloat(
+                  (
+                    ((stockPriceInfo.clpr * updateQuantity - itemBuyAmount) /
+                      itemBuyAmount) *
+                    100
+                  ).toFixed(2),
+                );
+
+                await Promise.all([
+                  manager.update(
+                    SpoUserInvestmentStock,
+                    {
+                      stockInfoSequence: stockInfoSequence,
+                      userSequence: userInfo.userSequence,
+                    },
+                    {
+                      quantity: updateQuantity,
+                      itemBuyAmount: itemBuyAmount,
+                      itemProfit: itemProfit,
+                      averageAmount: averageAmount,
+                      itemValueAmount: itemValueAmount,
+                      itemFltRt: itemFltRt,
+                    },
+                  ),
+                  manager.update(
+                    SpoUserInvestment,
+                    {
+                      userSequence: userInfo.userSequence,
+                    },
+                    {
+                      amount:
+                        userInvestInfo.amount - stockPriceInfo.clpr * quantity,
+                      buyAmount:
+                        userInvestInfo.buyAmount +
+                        stockPriceInfo.clpr * quantity,
+                    },
+                  ),
+                  manager.save(
+                    SpoUserInvestmentHistory,
+                    userInvestmentStockHistory,
+                  ),
+                ]);
+              }
+            });
           }
         }
       }
@@ -207,6 +270,8 @@ export class VirtualService {
         userInvestmentStockHistory.itmsNm = stockInfo.itmsNm;
         userInvestmentStockHistory.buySell = 'SELL';
         userInvestmentStockHistory.quantity = quantity;
+
+        // 수익률 계산 전
         if (!userInvestmentStockInfo.itemFltRt) {
           await Promise.all([
             userInvestmentStockInfo.quantity === quantity
@@ -242,6 +307,70 @@ export class VirtualService {
             ),
             manager.save(SpoUserInvestmentHistory, userInvestmentStockHistory),
           ]);
+        } else {
+          // 수익률 계산 후
+          await this.dataSource.transaction(async (manager) => {
+            const userInvestmentStock = await manager.findOne(
+              SpoUserInvestmentStock,
+              {
+                where: {
+                  stockInfoSequence: stockInfoSequence,
+                  userSequence: userInfo.userSequence,
+                },
+              },
+            );
+            if (userInvestmentStock) {
+              const updateQuantity = userInvestmentStock.quantity - quantity;
+              const itemBuyAmount =
+                userInvestmentStock.itemBuyAmount -
+                stockPriceInfo.clpr * quantity;
+              const itemProfit =
+                stockPriceInfo.clpr * updateQuantity - itemBuyAmount;
+              const averageAmount = itemBuyAmount / updateQuantity;
+              const itemValueAmount = itemProfit + itemBuyAmount;
+              const itemFltRt = parseFloat(
+                (
+                  ((stockPriceInfo.clpr * updateQuantity - itemBuyAmount) /
+                    itemBuyAmount) *
+                  100
+                ).toFixed(2),
+              );
+
+              await Promise.all([
+                manager.update(
+                  SpoUserInvestmentStock,
+                  {
+                    stockInfoSequence: stockInfoSequence,
+                    userSequence: userInfo.userSequence,
+                  },
+                  {
+                    quantity: updateQuantity,
+                    itemBuyAmount: itemBuyAmount,
+                    itemProfit: itemProfit,
+                    averageAmount: averageAmount,
+                    itemValueAmount: itemValueAmount,
+                    itemFltRt: itemFltRt,
+                  },
+                ),
+                manager.update(
+                  SpoUserInvestment,
+                  {
+                    userSequence: userInfo.userSequence,
+                  },
+                  {
+                    amount:
+                      userInvestInfo.amount - stockPriceInfo.clpr * quantity,
+                    buyAmount:
+                      userInvestInfo.buyAmount + stockPriceInfo.clpr * quantity,
+                  },
+                ),
+                manager.save(
+                  SpoUserInvestmentHistory,
+                  userInvestmentStockHistory,
+                ),
+              ]);
+            }
+          });
         }
       }
     });

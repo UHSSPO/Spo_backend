@@ -26,6 +26,8 @@ import { BatchCalculator } from '../../common/util/batch/BatchCalculator';
 import { SpoStockRisk } from '../../entity/spo_stock_risk.entity';
 import { SpoEnterpriseInfo } from '../../entity/spo_entpr_info.entity';
 import { SpoStockPriceYearInfo } from '../../entity/spo_stock_price_year_info.entity';
+import { SpoUserInvestmentStock } from '../../entity/spo_user_investment_stock.entity';
+import { SpoUserInvestment } from '../../entity/spo_user_investment.entity';
 
 @Injectable()
 export class BatchService implements OnApplicationBootstrap {
@@ -47,8 +49,8 @@ export class BatchService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.shouldRunBatch =
-      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-    // this.shouldRunBatch = true;
+      // process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+      this.shouldRunBatch = true;
   }
 
   // 상장종목정보
@@ -935,6 +937,48 @@ export class BatchService implements OnApplicationBootstrap {
   async deleteEnterpriseInfo() {
     await this.dataSource.transaction(async (manager) => {
       await manager.clear(SpoEnterpriseInfo);
+    });
+  }
+
+  async updateVirtualProfit() {
+    await this.dataSource.transaction(async (manager) => {
+      const userInvestmentStockList = await manager.find(
+        SpoUserInvestmentStock,
+      );
+
+      for (const userInvestmentStock of userInvestmentStockList) {
+        const stockPriceInfo = await manager.findOne(SpoStockPriceInfo, {
+          where: { stockInfoSequence: userInvestmentStock.stockInfoSequence },
+        });
+
+        const itemFltRt = parseFloat(
+          (
+            ((stockPriceInfo.clpr * userInvestmentStock.quantity -
+              userInvestmentStock.itemBuyAmount) /
+              userInvestmentStock.itemBuyAmount) *
+            100
+          ).toFixed(2),
+        );
+        const itemProfit =
+          stockPriceInfo.clpr * userInvestmentStock.quantity -
+          userInvestmentStock.itemBuyAmount;
+        const averageAmount =
+          userInvestmentStock.itemBuyAmount / userInvestmentStock.quantity;
+        const itemValueAmount = userInvestmentStock.itemBuyAmount + itemProfit;
+
+        await manager.update(
+          SpoUserInvestmentStock,
+          {
+            userSequence: userInvestmentStock.userSequence,
+          },
+          {
+            itemFltRt: itemFltRt,
+            itemProfit: itemProfit,
+            averageAmount: averageAmount,
+            itemValueAmount: itemValueAmount,
+          },
+        );
+      }
     });
   }
 }
