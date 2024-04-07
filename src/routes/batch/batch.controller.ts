@@ -64,6 +64,11 @@ export class BatchController {
 
   @Get('/virtual-profit')
   updateVirtualProfit() {
-    return this.batchService.updateVirtualProfit();
+    return this.batchService.updateVirtualStockProfit();
+  }
+
+  @Get('/user/virtual-profit')
+  updateVirtualUserProfit() {
+    return this.batchService.updateVirtualUserProfit();
   }
 }

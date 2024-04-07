@@ -337,21 +337,50 @@ export class VirtualService {
               );
 
               await Promise.all([
-                manager.update(
-                  SpoUserInvestmentStock,
-                  {
-                    stockInfoSequence: stockInfoSequence,
-                    userSequence: userInfo.userSequence,
-                  },
-                  {
-                    quantity: updateQuantity,
-                    itemBuyAmount: itemBuyAmount,
-                    itemProfit: itemProfit,
-                    averageAmount: averageAmount,
-                    itemValueAmount: itemValueAmount,
-                    itemFltRt: itemFltRt,
-                  },
-                ),
+                userInvestmentStock.quantity === quantity
+                  ? [
+                      manager.delete(SpoUserInvestmentStock, {
+                        userInvestmentStockSequence:
+                          userInvestmentStockInfo.userInvestmentStockSequence,
+                      }),
+                      manager.update(
+                        SpoUserInvestment,
+                        {
+                          userSequence: userInfo.userSequence,
+                        },
+                        {
+                          amount:
+                            userInvestInfo.amount +
+                            stockPriceInfo.clpr * quantity,
+                          buyAmount:
+                            userInvestInfo.buyAmount -
+                              stockPriceInfo.clpr * quantity <
+                            0
+                              ? 0
+                              : userInvestInfo.buyAmount -
+                                stockPriceInfo.clpr * quantity,
+                        },
+                      ),
+                      manager.save(
+                        SpoUserInvestmentHistory,
+                        userInvestmentStockHistory,
+                      ),
+                    ]
+                  : manager.update(
+                      SpoUserInvestmentStock,
+                      {
+                        stockInfoSequence: stockInfoSequence,
+                        userSequence: userInfo.userSequence,
+                      },
+                      {
+                        quantity: updateQuantity,
+                        itemBuyAmount: itemBuyAmount,
+                        itemProfit: itemProfit,
+                        averageAmount: averageAmount,
+                        itemValueAmount: itemValueAmount,
+                        itemFltRt: itemFltRt,
+                      },
+                    ),
                 manager.update(
                   SpoUserInvestment,
                   {
@@ -359,9 +388,14 @@ export class VirtualService {
                   },
                   {
                     amount:
-                      userInvestInfo.amount - stockPriceInfo.clpr * quantity,
+                      userInvestInfo.amount + stockPriceInfo.clpr * quantity,
                     buyAmount:
-                      userInvestInfo.buyAmount + stockPriceInfo.clpr * quantity,
+                      userInvestInfo.buyAmount -
+                        stockPriceInfo.clpr * quantity <
+                      0
+                        ? 0
+                        : userInvestInfo.buyAmount -
+                          stockPriceInfo.clpr * quantity,
                   },
                 ),
                 manager.save(

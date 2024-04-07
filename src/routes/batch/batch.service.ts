@@ -27,6 +27,7 @@ import { SpoStockRisk } from '../../entity/spo_stock_risk.entity';
 import { SpoEnterpriseInfo } from '../../entity/spo_entpr_info.entity';
 import { SpoStockPriceYearInfo } from '../../entity/spo_stock_price_year_info.entity';
 import { SpoUserInvestmentStock } from '../../entity/spo_user_investment_stock.entity';
+import { SpoUserInvestment } from '../../entity/spo_user_investment.entity';
 // import { SpoUserInvestment } from '../../entity/spo_user_investment.entity';
 
 @Injectable()
@@ -58,7 +59,7 @@ export class BatchService implements OnApplicationBootstrap {
   async stockBatchTask() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.getYesterdayDate();
-      const bizYear = '2022';
+      const bizYear = '2023';
       try {
         // 주식 시세 정보 호출
         const stockPriceInfoRes: any = await axios.get(
@@ -160,7 +161,7 @@ export class BatchService implements OnApplicationBootstrap {
   async getFinaStatInfo() {
     if (this.shouldRunBatch) {
       // 공시일자가 3월말에서 4월말 사이라 수동 작업
-      const bizYear = '2022';
+      const bizYear = '2023';
       try {
         const response = await axios.get(
           `${
@@ -227,7 +228,7 @@ export class BatchService implements OnApplicationBootstrap {
   // 손익계산서 배치
   async getIncoStatInfo() {
     if (this.shouldRunBatch) {
-      const bizYear = '2022';
+      const bizYear = '2023';
       try {
         const response = await axios.get(
           `${
@@ -936,7 +937,7 @@ export class BatchService implements OnApplicationBootstrap {
         }
       });
       this.logger.log(`Success updateStockRisk Update`);
-      await this.updateVirtualProfit();
+      await this.updateVirtualStockProfit();
     }
   }
 
@@ -948,7 +949,7 @@ export class BatchService implements OnApplicationBootstrap {
   }
 
   // 가상투자 주식 수익률 배치
-  async updateVirtualProfit() {
+  async updateVirtualStockProfit() {
     await this.dataSource.transaction(async (manager) => {
       const userInvestmentStockList = await manager.find(
         SpoUserInvestmentStock,
@@ -959,16 +960,18 @@ export class BatchService implements OnApplicationBootstrap {
           where: { stockInfoSequence: userInvestmentStock.stockInfoSequence },
         });
 
+        // 현재 가격을 가져와서 사용하여 수익률을 계산
+        const currentPrice = stockPriceInfo.clpr;
         const itemFltRt = parseFloat(
           (
-            ((stockPriceInfo.clpr * userInvestmentStock.quantity -
+            ((currentPrice * userInvestmentStock.quantity -
               userInvestmentStock.itemBuyAmount) /
               userInvestmentStock.itemBuyAmount) *
             100
           ).toFixed(2),
         );
         const itemProfit =
-          stockPriceInfo.clpr * userInvestmentStock.quantity -
+          currentPrice * userInvestmentStock.quantity -
           userInvestmentStock.itemBuyAmount;
         const averageAmount =
           userInvestmentStock.itemBuyAmount / userInvestmentStock.quantity;
@@ -977,7 +980,8 @@ export class BatchService implements OnApplicationBootstrap {
         await manager.update(
           SpoUserInvestmentStock,
           {
-            userSequence: userInvestmentStock.userSequence,
+            userInvestmentStockSequence:
+              userInvestmentStock.userInvestmentStockSequence,
           },
           {
             itemFltRt: itemFltRt,
@@ -988,5 +992,55 @@ export class BatchService implements OnApplicationBootstrap {
         );
       }
     });
+    this.logger.log(`Success updateVirtualStockProfit Update`);
+  }
+
+  // 가상투자 유저 수익률
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async updateVirtualUserProfit() {
+    await this.dataSource.transaction(async (manager) => {
+      const userInvestmentList = await manager.find(SpoUserInvestment);
+
+      for (const userInvestment of userInvestmentList) {
+        const userInvestmentStockList = await manager.find(
+          SpoUserInvestmentStock,
+          {
+            where: { userSequence: userInvestment.userSequence },
+          },
+        );
+        if (StringUtil.isNotEmpty(userInvestmentStockList)) {
+          const totalItemBuyAmount = userInvestmentStockList.reduce(
+            (total, stock) => {
+              return total + stock.itemValueAmount;
+            },
+            0,
+          );
+
+          const profitLossSales = totalItemBuyAmount - userInvestment.buyAmount;
+          const userFltRt = parseFloat(
+            (
+              ((totalItemBuyAmount - userInvestment.buyAmount) /
+                userInvestment.buyAmount) *
+              100
+            ).toFixed(2),
+          );
+          const valueAmount =
+            profitLossSales + userInvestment.buyAmount + userInvestment.amount;
+
+          await manager.update(
+            SpoUserInvestment,
+            {
+              userInvestmentSequence: userInvestment.userInvestmentSequence,
+            },
+            {
+              profitLossSales: profitLossSales,
+              userFltRt: userFltRt,
+              valueAmount: valueAmount,
+            },
+          );
+        }
+      }
+    });
+    this.logger.log(`Success updateVirtualUserProfit Update`);
   }
 }
