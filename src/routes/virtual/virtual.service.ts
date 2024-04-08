@@ -21,6 +21,8 @@ export class VirtualService {
     private dataSource: DataSource,
     @InjectRepository(SpoUserInvestmentStock)
     private userInvestmentStock: Repository<SpoUserInvestmentStock>,
+    @InjectRepository(SpoUserInvestment)
+    private userInvestment: Repository<SpoUserInvestment>,
   ) {}
 
   async selectUserInvestmentStart(
@@ -71,6 +73,14 @@ export class VirtualService {
     userSequence: number,
   ): Promise<SpoUserInvestmentStock[]> {
     return await this.userInvestmentStock.find({
+      where: { userSequence },
+    });
+  }
+
+  async selectUserInvestmentInfo(
+    userSequence: number,
+  ): Promise<SpoUserInvestment> {
+    return await this.userInvestment.findOne({
       where: { userSequence },
     });
   }

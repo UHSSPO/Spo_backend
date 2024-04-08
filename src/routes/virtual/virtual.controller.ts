@@ -17,6 +17,7 @@ import {
 } from './dto/res.dto';
 import { BuyStockInvestmentReq, SellStockInvestmentReq } from './dto/req.dto';
 import { SpoUserInvestmentStock } from '../../entity/spo_user_investment_stock.entity';
+import { SpoUserInvestment } from '../../entity/spo_user_investment.entity';
 
 @ApiTags('virtual')
 @Controller('virtual')
@@ -57,6 +58,22 @@ export class VirtualController {
     );
   }
 
+  @Get('/user/:userSequence')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: SpoUserInvestment,
+  })
+  @ApiOperation({
+    summary: '가상 투자 유저 투자 정보',
+  })
+  async selectUserInvestmentInfo(
+    @Param('userSequence') userSequence: number,
+  ): Promise<SpoUserInvestment> {
+    return await this.virtualService.selectUserInvestmentInfo(userSequence);
+  }
+
   @Post('/start')
   @UseGuards(JwtAuthGuard)
   @ApiResponse({
@@ -95,7 +112,7 @@ export class VirtualController {
     type: SellStockInvestmentRes,
   })
   @ApiOperation({
-    summary: '가상투자 매수',
+    summary: '가상투자 매도',
   })
   async sellStockInvestment(
     @Request() req,
