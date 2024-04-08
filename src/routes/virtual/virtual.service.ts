@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { IUserInterface } from '../../common/interface/user.interface';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SpoUserInvestment } from '../../entity/spo_user_investment.entity';
 import StringUtil from '../../common/util/StringUtil';
 import {
@@ -13,10 +13,15 @@ import { SpoUserInvestmentStock } from '../../entity/spo_user_investment_stock.e
 import { SpoUserInvestmentHistory } from '../../entity/spo_user_investment_history.entity';
 import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class VirtualService {
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    private dataSource: DataSource,
+    @InjectRepository(SpoUserInvestmentStock)
+    private userInvestmentStock: Repository<SpoUserInvestmentStock>,
+  ) {}
 
   async selectUserInvestmentStart(
     userInfo: IUserInterface,
@@ -59,6 +64,14 @@ export class VirtualService {
           HttpStatus.BAD_REQUEST,
         );
       }
+    });
+  }
+
+  async selectUserInvestmentStockList(
+    userSequence: number,
+  ): Promise<SpoUserInvestmentStock[]> {
+    return await this.userInvestmentStock.find({
+      where: { userSequence },
     });
   }
 

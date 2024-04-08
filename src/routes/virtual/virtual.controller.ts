@@ -5,6 +5,7 @@ import {
   Request,
   Get,
   Body,
+  Param,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { VirtualService } from './virtual.service';
@@ -15,6 +16,7 @@ import {
   SellStockInvestmentRes,
 } from './dto/res.dto';
 import { BuyStockInvestmentReq, SellStockInvestmentReq } from './dto/req.dto';
+import { SpoUserInvestmentStock } from '../../entity/spo_user_investment_stock.entity';
 
 @ApiTags('virtual')
 @Controller('virtual')
@@ -35,6 +37,24 @@ export class VirtualController {
     @Request() req,
   ): Promise<SelectUserInvestmentStart> {
     return await this.virtualService.selectUserInvestmentStart(req.user);
+  }
+
+  @Get('/list/:userSequence')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: SpoUserInvestmentStock,
+  })
+  @ApiOperation({
+    summary: '가상 투자 유저 투자 리스트',
+  })
+  async selectUserInvestmentStockList(
+    @Param('userSequence') userSequence: number,
+  ): Promise<SpoUserInvestmentStock[]> {
+    return await this.virtualService.selectUserInvestmentStockList(
+      userSequence,
+    );
   }
 
   @Post('/start')
