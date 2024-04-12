@@ -45,7 +45,7 @@ export class VirtualController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: SpoUserInvestmentStock,
+    type: [SpoUserInvestmentStock],
   })
   @ApiOperation({
     summary: '가상 투자 유저 투자 리스트',
