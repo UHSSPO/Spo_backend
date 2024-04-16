@@ -88,19 +88,26 @@ export class BoardService {
 
   async updateBoard(
     { title, detail }: UpdateBoardReq,
-    boardSequence,
+    boardSequence: number,
+    userInfo: IUserInterface,
   ): Promise<UpdateBoardRes> {
     await this.dataSource.transaction(async (manager) => {
       const board: SpoBoard = await manager.findOne(SpoBoard, {
         where: { boardSequence: boardSequence },
       });
       if (board) {
-        this.logger.log(`Board before update ${board.detail}, ${board.title}`);
-        await manager.update(
-          SpoBoard,
-          { boardSequence: boardSequence },
-          { title: title, detail: detail },
-        );
+        if (userInfo.userSequence === board.boardSequence) {
+          this.logger.log(
+            `Board before update ${board.detail}, ${board.title}`,
+          );
+          await manager.update(
+            SpoBoard,
+            { boardSequence: boardSequence },
+            { title: title, detail: detail },
+          );
+        } else {
+          throw new HttpException('권한이 없습니다.', HttpStatus.UNAUTHORIZED);
+        }
       } else {
         throw new HttpException(
           '존재하지 않는 게시글입니다.',
@@ -179,6 +186,7 @@ export class BoardService {
   async updateBoardComment(
     { comment }: UpdateBoardCommentReq,
     boardCommentSequence: number,
+    userInfo: IUserInterface,
   ): Promise<UpdateBoarCommentRes> {
     await this.dataSource.transaction(async (manager) => {
       const boardComment: SpoBoardComment = await manager.findOne(
@@ -193,11 +201,15 @@ export class BoardService {
       this.logger.log(`Comment before update ${boardComment.comment}`);
 
       if (boardComment) {
-        await manager.update(
-          SpoBoardComment,
-          { boardCommentSequence: boardCommentSequence },
-          { comment: comment },
-        );
+        if (userInfo.userSequence === boardComment.userSequence) {
+          await manager.update(
+            SpoBoardComment,
+            { boardCommentSequence: boardCommentSequence },
+            { comment: comment },
+          );
+        } else {
+          throw new HttpException('권한이 없습니다.', HttpStatus.UNAUTHORIZED);
+        }
       } else {
         throw new HttpException(
           '존재하지 않는 댓글입니다.',
@@ -213,6 +225,7 @@ export class BoardService {
 
   async deleteBoardComment(
     boardCommentSequence: number,
+    userInfo: IUserInterface,
   ): Promise<DeleteBoardCommentRes> {
     await this.dataSource.transaction(async (manager) => {
       const boardComment = await manager.findOne(SpoBoardComment, {
@@ -220,13 +233,17 @@ export class BoardService {
       });
 
       if (boardComment) {
-        await manager.update(
-          SpoBoardComment,
-          {
-            boardCommentSequence: boardCommentSequence,
-          },
-          { deleteYn: 'Y' },
-        );
+        if (userInfo.userSequence === userInfo.userSequence) {
+          await manager.update(
+            SpoBoardComment,
+            {
+              boardCommentSequence: boardCommentSequence,
+            },
+            { deleteYn: 'Y' },
+          );
+        } else {
+          throw new HttpException('권한이 없습니다.', HttpStatus.UNAUTHORIZED);
+        }
       } else {
         throw new HttpException(
           '존재하지 않는 댓글 입니다.',

@@ -3,8 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   Post,
   Put,
@@ -118,11 +116,11 @@ export class BoardController {
     @Body() reqBody: UpdateBoardReq,
     @Request() req,
   ): Promise<UpdateBoardRes> {
-    if (req.user.userSequence === reqBody.userSequence) {
-      return await this.boardService.updateBoard(reqBody, boardSequence);
-    } else {
-      throw new HttpException('권한이 없습니다.', HttpStatus.UNAUTHORIZED);
-    }
+    return await this.boardService.updateBoard(
+      reqBody,
+      boardSequence,
+      req.user,
+    );
   }
 
   @Put('/comment/:boardCommentSequence')
@@ -140,14 +138,11 @@ export class BoardController {
     @Body() reqBody: UpdateBoardCommentReq,
     @Request() req,
   ): Promise<UpdateBoarCommentRes> {
-    if (req.user.userSequence === reqBody.userSequence) {
-      return await this.boardService.updateBoardComment(
-        reqBody,
-        boardCommentSequence,
-      );
-    } else {
-      throw new HttpException('권한이 없습니다.', HttpStatus.UNAUTHORIZED);
-    }
+    return await this.boardService.updateBoardComment(
+      reqBody,
+      boardCommentSequence,
+      req.user,
+    );
   }
 
   @Delete('/:boardSequence')
@@ -179,7 +174,11 @@ export class BoardController {
   })
   async deleteBoardComment(
     @Param('boardCommentSequence') boardCommentSequence: number,
+    @Request() req,
   ): Promise<DeleteBoardCommentRes> {
-    return await this.boardService.deleteBoardComment(boardCommentSequence);
+    return await this.boardService.deleteBoardComment(
+      boardCommentSequence,
+      req.user,
+    );
   }
 }
