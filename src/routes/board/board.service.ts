@@ -42,18 +42,16 @@ export class BoardService {
   }
 
   async getBoardDetail(boardSequence: number): Promise<SpoBoard> {
-    return await this.boardRepository
+    const spoBoard = await this.boardRepository
       .createQueryBuilder('SB')
-      .select()
-      .leftJoinAndSelect('SB.boardComment', 'SBC')
-      .where(
-        'SB.boardSequence = :boardSequence AND SBC.deleteYn = :deleteYn ',
-        {
-          boardSequence: boardSequence,
-          deleteYn: 'N',
-        },
-      )
+      .select(['SB', 'SBC'])
+      .leftJoin('SB.boardComment', 'SBC')
+      .where('SB.boardSequence = :boardSequence', {
+        boardSequence: boardSequence,
+      })
       .getOne();
+
+    return spoBoard;
   }
 
   async createBoard(
