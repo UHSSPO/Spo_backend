@@ -49,6 +49,7 @@ export class BoardService {
       .where('SB.boardSequence = :boardSequence', {
         boardSequence: boardSequence,
       })
+      .andWhere('SBC.deleteYn = :deleteYn', { deleteYn: 'N' })
       .getOne();
 
     return spoBoard;
@@ -94,7 +95,7 @@ export class BoardService {
         where: { boardSequence: boardSequence },
       });
       if (board) {
-        if (userInfo.userSequence === board.boardSequence) {
+        if (userInfo.userSequence === board.userSequence) {
           this.logger.log(
             `Board before update ${board.detail}, ${board.title}`,
           );
@@ -226,12 +227,15 @@ export class BoardService {
     userInfo: IUserInterface,
   ): Promise<DeleteBoardCommentRes> {
     await this.dataSource.transaction(async (manager) => {
-      const boardComment = await manager.findOne(SpoBoardComment, {
-        where: { boardCommentSequence: boardCommentSequence },
-      });
+      const boardComment: SpoBoardComment = await manager.findOne(
+        SpoBoardComment,
+        {
+          where: { boardCommentSequence: boardCommentSequence },
+        },
+      );
 
       if (boardComment) {
-        if (userInfo.userSequence === userInfo.userSequence) {
+        if (userInfo.userSequence === boardComment.userSequence) {
           await manager.update(
             SpoBoardComment,
             {

@@ -7,6 +7,7 @@ import {
   BuyStockInvestmentRes,
   SelectUserInvestmentStart,
   SellStockInvestmentRes,
+  StockRankingRes,
 } from './dto/res.dto';
 import { BuyStockInvestmentReq, SellStockInvestmentReq } from './dto/req.dto';
 import { SpoUserInvestmentStock } from '../../entity/spo_user_investment_stock.entity';
@@ -14,6 +15,7 @@ import { SpoUserInvestmentHistory } from '../../entity/spo_user_investment_histo
 import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { SpoUser } from '../../entity/spo_user.entity';
 
 @Injectable()
 export class VirtualService {
@@ -434,5 +436,20 @@ export class VirtualService {
     return {
       sellStockYn: 'Y',
     };
+  }
+
+  async selectStockRanking(): Promise<StockRankingRes[]> {
+    return await this.userInvestment
+      .createQueryBuilder('SUI')
+      .select([
+        'SUI.USR_SEQ as userSequence',
+        'SUI.PRFIT_LOS_SALES as profitLossSales',
+        'SUI.VALU_AMT as valueAmount',
+        'SUI.USR_FLR_RT as userFltRt',
+        'SU.NICK_NAM',
+      ])
+      .innerJoin(SpoUser, 'SU', 'SU.USR_SEQ = SUI.USR_SEQ')
+      .orderBy('SUI.USR_FLR_RT', 'DESC')
+      .getRawMany();
   }
 }

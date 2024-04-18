@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { SpoUserInvestment } from '../../../entity/spo_user_investment.entity';
 
 export class SelectUserInvestmentStart {
   @ApiProperty({
@@ -25,4 +26,18 @@ export class SellStockInvestmentRes {
     required: true,
   })
   sellStockYn: string;
+}
+
+export class StockRankingRes extends OmitType(SpoUserInvestment, [
+  'userSequence',
+  'userFltRt',
+  'valueAmount',
+  'profitLossSales',
+]) {
+  @ApiProperty({
+    example: '성욱',
+    description: '유저 닉네임',
+    required: true,
+  })
+  nickName: string;
 }

@@ -14,6 +14,7 @@ import {
   BuyStockInvestmentRes,
   SelectUserInvestmentStart,
   SellStockInvestmentRes,
+  StockRankingRes,
 } from './dto/res.dto';
 import { BuyStockInvestmentReq, SellStockInvestmentReq } from './dto/req.dto';
 import { SpoUserInvestmentStock } from '../../entity/spo_user_investment_stock.entity';
@@ -72,6 +73,19 @@ export class VirtualController {
     @Param('userSequence') userSequence: number,
   ): Promise<SpoUserInvestment> {
     return await this.virtualService.selectUserInvestmentInfo(userSequence);
+  }
+
+  @Get('/ranking')
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: [StockRankingRes],
+  })
+  @ApiOperation({
+    summary: '가상투자 랭킹',
+  })
+  async selectStockRanking(): Promise<StockRankingRes[]> {
+    return await this.virtualService.selectStockRanking();
   }
 
   @Post('/start')
