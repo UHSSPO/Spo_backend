@@ -49,7 +49,7 @@ export class BoardService {
       .where('SB.boardSequence = :boardSequence', {
         boardSequence: boardSequence,
       })
-      .andWhere('SBC.deleteYn = :deleteYn', { deleteYn: 'N' })
+      .andWhere('SB.deleteYn = :deleteYn', { deleteYn: 'N' })
       .getOne();
 
     return spoBoard;
