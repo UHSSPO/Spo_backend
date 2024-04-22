@@ -93,11 +93,14 @@ export class VirtualController {
   @ApiResponse({
     status: 200,
     description: 'Success',
+    type: SelectUserInvestmentStart,
   })
   @ApiOperation({
     summary: '가상투자 시작',
   })
-  async startVirtualInvestment(@Request() req): Promise<void> {
+  async startVirtualInvestment(
+    @Request() req,
+  ): Promise<SelectUserInvestmentStart> {
     return this.virtualService.startVirtualInvestment(req.user);
   }
 

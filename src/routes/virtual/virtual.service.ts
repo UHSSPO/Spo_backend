@@ -48,7 +48,9 @@ export class VirtualService {
     };
   }
 
-  async startVirtualInvestment(userInfo: IUserInterface): Promise<void> {
+  async startVirtualInvestment(
+    userInfo: IUserInterface,
+  ): Promise<SelectUserInvestmentStart> {
     await this.dataSource.transaction(async (manager) => {
       const userInvestment = new SpoUserInvestment();
 
@@ -69,6 +71,7 @@ export class VirtualService {
         );
       }
     });
+    return { startInvestmentYn: 'Y' };
   }
 
   async selectUserInvestmentStockList(
