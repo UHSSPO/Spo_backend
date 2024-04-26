@@ -161,7 +161,7 @@ export class BatchService implements OnApplicationBootstrap {
   async getFinaStatInfo() {
     if (this.shouldRunBatch) {
       // 공시일자가 3월말에서 4월말 사이라 수동 작업
-      const bizYear = '2023';
+      const bizYear = '2022';
       try {
         const response = await axios.get(
           `${
@@ -228,7 +228,7 @@ export class BatchService implements OnApplicationBootstrap {
   // 손익계산서 배치
   async getIncoStatInfo() {
     if (this.shouldRunBatch) {
-      const bizYear = '2023';
+      const bizYear = '2022';
       try {
         const response = await axios.get(
           `${
