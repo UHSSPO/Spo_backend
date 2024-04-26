@@ -179,6 +179,9 @@ export class StockInfoResDto extends OmitType(SpoStockInfo, [
 }
 
 export class CommendPersonalStock extends OmitType(SpoStockInfo, [
+  'tradeSuspendYn',
+  'badData',
+  'updateAt',
   'stockRisk',
   'stockView',
   'interestStock',
@@ -190,4 +193,32 @@ export class CommendPersonalStock extends OmitType(SpoStockInfo, [
   'prcYearInfo',
   'enterpriseCategories',
   'enterpriseInfo',
-] as const) {}
+] as const) {
+  @ApiProperty({
+    example: 19032,
+    description: '종가',
+    required: true,
+  })
+  clpr: number;
+
+  @ApiProperty({
+    example: 1.2,
+    description: '등락률',
+    required: true,
+  })
+  fltRt: number;
+
+  @ApiProperty({
+    example: 123113,
+    description: '거래량',
+    required: true,
+  })
+  trqu: number;
+
+  @ApiProperty({
+    example: 5423423123,
+    description: '시가총액',
+    required: true,
+  })
+  mrktTotAmt: number;
+}

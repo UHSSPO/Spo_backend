@@ -466,17 +466,34 @@ export class StockService {
     });
     return await this.stockInfoRepository
       .createQueryBuilder('SSI')
+      .select([
+        'SSI.STK_INFO_SEQ as stockInfoSequence',
+        'SSI.CRNO as crno',
+        'SSI.SRTN_CD as srtnCd',
+        'SSI.CORP_NM as corpNm',
+        'SSI.ITMS_NM as itmsNm',
+        'SSI.MRKT_CTG as mrktCtg',
+        'SSP.CLPR as clpr',
+        'SSP.FLT_RT as fltRt',
+        'SSP.TRQU as trqu',
+        'SSP.MRKT_TOT_AMT as mrktTotAmt',
+      ])
       .innerJoin(SpoStockRisk, 'SSR', 'SSR.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
       .innerJoin(
         SpoEnterpriseScore,
         'SES',
         'SES.STK_INFO_SEQ = SSI.STK_INFO_SEQ',
       )
+      .innerJoin(
+        SpoStockPriceInfo,
+        'SSP',
+        'SSP.STK_INFO_SEQ = SSI.STK_INFO_SEQ',
+      )
       .where('SSR.RISK = :investPropensity', {
         investPropensity: userInfo.investPropensity,
       })
       .orderBy('SES.TOTL_SCOR', 'DESC')
       .limit(3)
-      .getMany();
+      .getRawMany();
   }
 }

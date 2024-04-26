@@ -998,49 +998,54 @@ export class BatchService implements OnApplicationBootstrap {
   // 가상투자 유저 수익률
   @Cron(CronExpression.EVERY_5_MINUTES)
   async updateVirtualUserProfit() {
-    await this.dataSource.transaction(async (manager) => {
-      const userInvestmentList = await manager.find(SpoUserInvestment);
+    if (this.shouldRunBatch) {
+      await this.dataSource.transaction(async (manager) => {
+        const userInvestmentList = await manager.find(SpoUserInvestment);
 
-      for (const userInvestment of userInvestmentList) {
-        const userInvestmentStockList = await manager.find(
-          SpoUserInvestmentStock,
-          {
-            where: { userSequence: userInvestment.userSequence },
-          },
-        );
-        if (StringUtil.isNotEmpty(userInvestmentStockList)) {
-          const totalItemBuyAmount = userInvestmentStockList.reduce(
-            (total, stock) => {
-              return total + stock.itemValueAmount;
-            },
-            0,
-          );
-
-          const profitLossSales = totalItemBuyAmount - userInvestment.buyAmount;
-          const userFltRt = parseFloat(
-            (
-              ((totalItemBuyAmount - userInvestment.buyAmount) /
-                userInvestment.buyAmount) *
-              100
-            ).toFixed(2),
-          );
-          const valueAmount =
-            profitLossSales + userInvestment.buyAmount + userInvestment.amount;
-
-          await manager.update(
-            SpoUserInvestment,
+        for (const userInvestment of userInvestmentList) {
+          const userInvestmentStockList = await manager.find(
+            SpoUserInvestmentStock,
             {
-              userInvestmentSequence: userInvestment.userInvestmentSequence,
-            },
-            {
-              profitLossSales: profitLossSales,
-              userFltRt: userFltRt,
-              valueAmount: valueAmount,
+              where: { userSequence: userInvestment.userSequence },
             },
           );
+          if (StringUtil.isNotEmpty(userInvestmentStockList)) {
+            const totalItemBuyAmount = userInvestmentStockList.reduce(
+              (total, stock) => {
+                return total + stock.itemValueAmount;
+              },
+              0,
+            );
+
+            const profitLossSales =
+              totalItemBuyAmount - userInvestment.buyAmount;
+            const userFltRt = parseFloat(
+              (
+                ((totalItemBuyAmount - userInvestment.buyAmount) /
+                  userInvestment.buyAmount) *
+                100
+              ).toFixed(2),
+            );
+            const valueAmount =
+              profitLossSales +
+              userInvestment.buyAmount +
+              userInvestment.amount;
+
+            await manager.update(
+              SpoUserInvestment,
+              {
+                userInvestmentSequence: userInvestment.userInvestmentSequence,
+              },
+              {
+                profitLossSales: profitLossSales,
+                userFltRt: userFltRt,
+                valueAmount: valueAmount,
+              },
+            );
+          }
         }
-      }
-    });
-    this.logger.log(`Success updateVirtualUserProfit Update`);
+      });
+      this.logger.log(`Success updateVirtualUserProfit Update`);
+    }
   }
 }
