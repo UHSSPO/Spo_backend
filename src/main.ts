@@ -31,6 +31,7 @@ async function bootstrap() {
       'http://43.201.117.252',
       'http://localhost:3000',
       'https://kauth.kakao.com',
+      'http://uhs-spo.kro.kr',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
