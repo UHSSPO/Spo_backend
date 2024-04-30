@@ -76,7 +76,7 @@ export class BoardService {
       .andWhere('SB.deleteYn = :deleteYn', { deleteYn: 'N' })
       .getRawOne();
 
-    const spoBoardComment = await this.boardCommentRepository
+    const boardComment = await this.boardCommentRepository
       .createQueryBuilder('SBC')
       .select([
         'SBC.BOARD_COMNT_SEQ as boardCommentSequence',
@@ -97,9 +97,9 @@ export class BoardService {
 
     const combinedData = {
       spoBoard: spoBoard,
-      spoBoardComment: spoBoardComment,
+      boardComment: boardComment,
     };
-    combinedData.spoBoard.spoBoardComment = spoBoardComment;
+    combinedData.spoBoard.boardComment = boardComment;
 
     return spoBoard;
   }
