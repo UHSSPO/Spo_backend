@@ -58,7 +58,7 @@ export class BoardController {
   })
   async getBoardDetail(
     @Param('boardSequence') boardSequence: number,
-  ): Promise<SpoBoard> {
+  ): Promise<any> {
     return await this.boardService.getBoardDetail(boardSequence);
   }
 

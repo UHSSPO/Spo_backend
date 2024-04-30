@@ -30,10 +30,6 @@ export class SpoBoard {
   @ApiProperty({ description: '내용', example: '내용입니다.' })
   detail: string;
 
-  @Column({ name: 'NICK_NM' })
-  @ApiProperty({ description: '닉네임', example: '성욱' })
-  nickName: string;
-
   @Column({ name: 'DELE_YN', default: 'N' })
   @ApiProperty({ description: '삭제여부', example: 'Y' })
   deleteYn: string;
@@ -46,7 +42,7 @@ export class SpoBoard {
   @ApiProperty({ description: '업데이트 일자', example: '20231218' })
   updateAt: Date;
 
-  @ManyToOne(() => SpoUser, (user) => user.userSequence)
+  @ManyToOne(() => SpoUser, (user) => user.board)
   @JoinColumn({
     name: 'USR_SEQ',
     referencedColumnName: 'userSequence',

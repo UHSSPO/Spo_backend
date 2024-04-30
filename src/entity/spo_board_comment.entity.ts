@@ -29,10 +29,6 @@ export class SpoBoardComment {
   @ApiProperty({ description: '댓글', example: '댓글입니다' })
   comment: string;
 
-  @Column({ name: 'NICK_NAM' })
-  @ApiProperty({ description: '닉네임', example: '성욱' })
-  nickName: string;
-
   @Column({ name: 'DELE_YN', default: 'N' })
   @ApiProperty({ description: '삭제여부', example: 'Y' })
   deleteYn: string;

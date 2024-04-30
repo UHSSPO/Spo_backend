@@ -27,30 +27,79 @@ export class BoardService {
     @InjectRepository(SpoBoard)
     private boardRepository: Repository<SpoBoard>,
 
+    @InjectRepository(SpoBoardComment)
+    private boardCommentRepository: Repository<SpoBoardComment>,
+
     @InjectRepository(SpoUser)
     private userRepository: Repository<SpoUser>,
   ) {}
   private logger = new Logger(BoardService.name);
 
   async getAllBoard(): Promise<SpoBoard[]> {
-    return await this.boardRepository.find({
-      where: { deleteYn: 'N' },
-      order: {
-        createAt: 'DESC',
-      },
-    });
+    return await this.boardRepository
+      .createQueryBuilder('SB')
+      .select([
+        'SB.BOARD_SEQ as boardSequence',
+        'SB.USR_SEQ as userSequence',
+        'SB.TITLE as title',
+        'SB.DETAIL as detail',
+        'SU.NICK_NAM as nickName',
+        'SB.DELE_YN as deleteYn',
+        'SB.CRET_AT as createAt',
+        'SB.UPDT_AT as updateAt',
+      ])
+      .innerJoin(SpoUser, 'SU', 'SU.USR_SEQ = SB.USR_SEQ')
+      .where('SB.DELE_YN = :deleteYn', {
+        deleteYn: 'N',
+      })
+      .orderBy('SB.CRET_AT', 'DESC')
+      .getRawMany();
   }
 
-  async getBoardDetail(boardSequence: number): Promise<SpoBoard> {
+  async getBoardDetail(boardSequence: number): Promise<any> {
     const spoBoard = await this.boardRepository
       .createQueryBuilder('SB')
-      .select(['SB', 'SBC'])
-      .leftJoin('SB.boardComment', 'SBC')
+      .select([
+        'SB.BOARD_SEQ as boardSequence',
+        'SB.USR_SEQ as userSequence',
+        'SB.TITLE as title',
+        'SB.DETAIL as detail',
+        'SU.NICK_NAM as nickName',
+        'SB.DELE_YN as deleteYn',
+        'SB.CRET_AT as createAt',
+        'SB.UPDT_AT as updateAt',
+      ])
+      .innerJoin(SpoUser, 'SU', 'SU.USR_SEQ = SB.USR_SEQ')
       .where('SB.boardSequence = :boardSequence', {
         boardSequence: boardSequence,
       })
       .andWhere('SB.deleteYn = :deleteYn', { deleteYn: 'N' })
-      .getOne();
+      .getRawOne();
+
+    const spoBoardComment = await this.boardCommentRepository
+      .createQueryBuilder('SBC')
+      .select([
+        'SBC.BOARD_COMNT_SEQ as boardCommentSequence',
+        'SBC.BOARD_SEQ as boardSequence',
+        'SBC.USR_SEQ as userSequence',
+        'SBC.COMMENT as comment',
+        'SBC.DELE_YN as deleteYn',
+        'SBC.CRET_AT as createAt',
+        'SBC.UPDT_AT as updateAt',
+        'SU.NICK_NAM as nickName',
+      ])
+      .innerJoin(SpoUser, 'SU', 'SU.USR_SEQ = SBC.USR_SEQ')
+      .where('SBC.boardSequence = :boardSequence', {
+        boardSequence: boardSequence,
+      })
+      .andWhere('SBC.deleteYn = :deleteYn', { deleteYn: 'N' })
+      .getRawMany();
+
+    const combinedData = {
+      spoBoard: spoBoard,
+      spoBoardComment: spoBoardComment,
+    };
+    combinedData.spoBoard.spoBoardComment = spoBoardComment;
 
     return spoBoard;
   }
@@ -59,17 +108,12 @@ export class BoardService {
     { title, detail }: CreateBoardReq,
     user: IUserInterface,
   ): Promise<CreateBoardRes> {
-    const userInfo = await this.userRepository.findOne({
-      where: { userSequence: user.userSequence },
-    });
-
     if (user) {
       await this.dataSource.transaction(async (manager) => {
         const board = new SpoBoard();
         board.userSequence = user.userSequence;
         board.title = title;
         board.detail = detail;
-        board.nickName = userInfo.nickName;
         board.deleteYn = 'N';
 
         await manager.save(SpoBoard, board);
@@ -167,7 +211,6 @@ export class BoardService {
         const boardComment = new SpoBoardComment();
         boardComment.userSequence = userInfo.userSequence;
         boardComment.boardSequence = boardSequence;
-        boardComment.nickName = userInfo.nickName;
         boardComment.comment = comment;
         boardComment.deleteYn = 'N';
 
