@@ -6,6 +6,7 @@ import StringUtil from '../../common/util/StringUtil';
 import {
   BuyStockInvestmentRes,
   SelectUserInvestmentStart,
+  SelectVirtualStockDetailRes,
   SellStockInvestmentRes,
   StockRankingRes,
 } from './dto/res.dto';
@@ -21,10 +22,15 @@ import { SpoUser } from '../../entity/spo_user.entity';
 export class VirtualService {
   constructor(
     private dataSource: DataSource,
+
     @InjectRepository(SpoUserInvestmentStock)
     private userInvestmentStock: Repository<SpoUserInvestmentStock>,
+
     @InjectRepository(SpoUserInvestment)
     private userInvestment: Repository<SpoUserInvestment>,
+
+    @InjectRepository(SpoStockPriceInfo)
+    private stockPriceInfoRepository: Repository<SpoStockPriceInfo>,
   ) {}
 
   async selectUserInvestmentStart(
@@ -454,5 +460,23 @@ export class VirtualService {
       .innerJoin(SpoUser, 'SU', 'SU.USR_SEQ = SUI.USR_SEQ')
       .orderBy('SUI.USR_FLR_RT', 'DESC')
       .getRawMany();
+  }
+
+  async selectVirtualStockDetail(
+    stockInfoSequence: number,
+  ): Promise<SelectVirtualStockDetailRes> {
+    return await this.stockPriceInfoRepository
+      .createQueryBuilder('SSP')
+      .select([
+        'STK_INFO_SEQ as stockInfoSequence',
+        'SRTN_CD as srtnCd',
+        'ITMS_NM as itmsNm',
+        'BAS_DT as basDt',
+        'FLT_RT as fltRt',
+      ])
+      .where('STK_INFO_SEQ = :stockInfoSequence', {
+        stockInfoSequence: stockInfoSequence,
+      })
+      .getRawOne();
   }
 }

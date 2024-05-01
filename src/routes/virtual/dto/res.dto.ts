@@ -1,5 +1,6 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { SpoUserInvestment } from '../../../entity/spo_user_investment.entity';
+import { SpoStockPriceInfo } from '../../../entity/spo_stock_price_info.entity';
 
 export class SelectUserInvestmentStart {
   @ApiProperty({
@@ -41,3 +42,11 @@ export class StockRankingRes extends OmitType(SpoUserInvestment, [
   })
   nickName: string;
 }
+
+export class SelectVirtualStockDetailRes extends PickType(SpoStockPriceInfo, [
+  'stockInfoSequence',
+  'srtnCd',
+  'itmsNm',
+  'basDt',
+  'clpr',
+]) {}

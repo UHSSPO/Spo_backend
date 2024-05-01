@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import {
   BuyStockInvestmentRes,
   SelectUserInvestmentStart,
+  SelectVirtualStockDetailRes,
   SellStockInvestmentRes,
   StockRankingRes,
 } from './dto/res.dto';
@@ -39,6 +40,24 @@ export class VirtualController {
     @Request() req,
   ): Promise<SelectUserInvestmentStart> {
     return await this.virtualService.selectUserInvestmentStart(req.user);
+  }
+
+  @Get('/stock/:stockInfoSequence')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: SelectVirtualStockDetailRes,
+  })
+  @ApiOperation({
+    summary: '가상투자 종목 상세 조회',
+  })
+  async selectVirtualStockDetail(
+    @Param('stockInfoSequence') stockInfoSequence: number,
+  ): Promise<SelectVirtualStockDetailRes> {
+    return await this.virtualService.selectVirtualStockDetail(
+      stockInfoSequence,
+    );
   }
 
   @Get('/list/:userSequence')
