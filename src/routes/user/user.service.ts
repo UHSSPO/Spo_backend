@@ -18,6 +18,7 @@ import { ConfigService } from '@nestjs/config';
 import { SpoStockInfo } from '../../entity/spo_stock_info.entity';
 import { SpoStockPriceInfo } from '../../entity/spo_stock_price_info.entity';
 import { SpoInterestStock } from '../../entity/spo_interest_stock.entity';
+import StringUtil from '../../common/util/StringUtil';
 
 @Injectable()
 export class UserService {
@@ -160,12 +161,23 @@ export class UserService {
         where: { userSequence: userSequence },
       });
 
-      if (user) {
-        await manager.update(
-          SpoUser,
-          { userSequence: userSequence },
-          { nickName: changeNickName },
-        );
+      const checkNickName = await manager.findOne(SpoUser, {
+        where: { nickName: changeNickName },
+      });
+
+      if (StringUtil.isNotEmpty(user)) {
+        if (StringUtil.isEmpty(checkNickName)) {
+          await manager.update(
+            SpoUser,
+            { userSequence: userSequence },
+            { nickName: changeNickName },
+          );
+        } else {
+          throw new HttpException(
+            '중목된 닉네임 입니다.',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       } else {
         throw new HttpException(
           '존재하지 않는 유저입니다.',
