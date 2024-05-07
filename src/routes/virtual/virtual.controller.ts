@@ -12,6 +12,7 @@ import { VirtualService } from './virtual.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import {
   BuyStockInvestmentRes,
+  SelectInvestmentStockRes,
   SelectUserInvestmentStart,
   SelectVirtualStockDetailRes,
   SellStockInvestmentRes,
@@ -65,14 +66,14 @@ export class VirtualController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: [SpoUserInvestmentStock],
+    type: [SelectInvestmentStockRes],
   })
   @ApiOperation({
     summary: '가상 투자 유저 투자 리스트',
   })
   async selectUserInvestmentStockList(
     @Param('userSequence') userSequence: number,
-  ): Promise<SpoUserInvestmentStock[]> {
+  ): Promise<SelectInvestmentStockRes[]> {
     return await this.virtualService.selectUserInvestmentStockList(
       userSequence,
     );

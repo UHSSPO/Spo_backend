@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { SpoUserInvestment } from '../../../entity/spo_user_investment.entity';
 import { SpoStockPriceInfo } from '../../../entity/spo_stock_price_info.entity';
+import { SpoUserInvestmentStock } from '../../../entity/spo_user_investment_stock.entity';
 
 export class SelectUserInvestmentStart {
   @ApiProperty({
@@ -50,3 +51,15 @@ export class SelectVirtualStockDetailRes extends PickType(SpoStockPriceInfo, [
   'basDt',
   'clpr',
 ]) {}
+
+export class SelectInvestmentStockRes extends OmitType(SpoUserInvestmentStock, [
+  'user',
+  'stockInfo',
+]) {
+  @ApiProperty({
+    example: '삼성전자',
+    description: '종목명',
+    required: true,
+  })
+  itmsNm: string;
+}

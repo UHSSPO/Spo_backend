@@ -22,7 +22,7 @@ export class SpoBoard {
   @ApiProperty({ description: '유저 일련 번호', example: 1 })
   userSequence: number;
 
-  @Column({ name: 'TITLE' })
+  @Column({ name: 'TITLE', type: 'text' })
   @ApiProperty({ description: '제목', example: '제목입니다.' })
   title: string;
 

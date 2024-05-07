@@ -5,6 +5,7 @@ import { SpoUserInvestment } from '../../entity/spo_user_investment.entity';
 import StringUtil from '../../common/util/StringUtil';
 import {
   BuyStockInvestmentRes,
+  SelectInvestmentStockRes,
   SelectUserInvestmentStart,
   SelectVirtualStockDetailRes,
   SellStockInvestmentRes,
@@ -82,10 +83,24 @@ export class VirtualService {
 
   async selectUserInvestmentStockList(
     userSequence: number,
-  ): Promise<SpoUserInvestmentStock[]> {
-    return await this.userInvestmentStock.find({
-      where: { userSequence },
-    });
+  ): Promise<SelectInvestmentStockRes[]> {
+    return await this.userInvestmentStock
+      .createQueryBuilder('SIS')
+      .select([
+        'SIS.USR_INVEST_STK_SEQ as userInvestmentStockSequence',
+        'SIS.USR_SEQ as userSequence',
+        'SIS.STK_INFO_SEQ as stockInfoSequence',
+        'SIS.QUAN as quantity',
+        'SIS.ITMS_VALU_AMT as itemValueAmount',
+        'SIS.ITMS_BUY_AMT as itemBuyAmount',
+        'SIS.ITMS_PRFIT as itemProfit',
+        'SIS.ITMS_FLR_RT as itemFltRt',
+        'SIS.AVG_AMT as averageAmount',
+        'SSI.ITMS_NM',
+      ])
+      .where('SIS.USR_SEQ = :userSequence', { userSequence: userSequence })
+      .innerJoin(SpoStockInfo, 'SSI', 'SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
+      .getRawMany();
   }
 
   async selectUserInvestmentInfo(
