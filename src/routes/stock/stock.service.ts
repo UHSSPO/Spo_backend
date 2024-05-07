@@ -135,7 +135,7 @@ export class StockService {
       await manager.update(
         SpoStockView,
         { stockInfoSequence: stockInfoSequence },
-        { view: stockView.view + 1 },
+        { view: stockView ? stockView.view + 1 : 1 },
       );
     });
 

@@ -299,7 +299,7 @@ export class BatchService implements OnApplicationBootstrap {
   }
 
   // 주식 시세 정보 배치
-  @Cron(CronExpression.EVERY_DAY_AT_3PM) // 매일 4시에 실행
+  @Cron(CronExpression.EVERY_DAY_AT_3PM) // 매일 3시에 실행
   async getStockPriceInfo() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.getYesterdayDate();

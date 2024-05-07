@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BuyStockInvestmentReq {
@@ -11,6 +11,7 @@ export class BuyStockInvestmentReq {
   stockInfoSequence: number;
 
   @IsNotEmpty({ message: '매수량을 입력해 주세요.' })
+  @IsNumber()
   @ApiProperty({
     example: 3,
     description: '매수량',
