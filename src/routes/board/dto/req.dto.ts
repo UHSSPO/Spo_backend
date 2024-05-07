@@ -3,7 +3,6 @@ import { IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 
 export class CreateBoardReq {
   @IsNotEmpty({ message: '제목은 필수입니다.' })
-  @MaxLength(20, { message: '제목은 20자 이내로 작성해 주세요.' })
   @ApiProperty({
     example: '제목입니다.',
     description: '제목',
