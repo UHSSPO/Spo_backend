@@ -472,7 +472,7 @@ export class VirtualService {
         'SRTN_CD as srtnCd',
         'ITMS_NM as itmsNm',
         'BAS_DT as basDt',
-        'FLT_RT as fltRt',
+        'CLPR as clpr',
       ])
       .where('STK_INFO_SEQ = :stockInfoSequence', {
         stockInfoSequence: stockInfoSequence,
