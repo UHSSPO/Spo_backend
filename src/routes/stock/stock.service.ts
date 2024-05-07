@@ -493,7 +493,7 @@ export class StockService {
         investPropensity: userInfo.investPropensity,
       })
       .orderBy('SES.TOTL_SCOR', 'DESC')
-      .limit(3)
+      .limit(6)
       .getRawMany();
   }
 }
