@@ -96,7 +96,7 @@ export class VirtualService {
         'SIS.ITMS_PRFIT as itemProfit',
         'SIS.ITMS_FLR_RT as itemFltRt',
         'SIS.AVG_AMT as averageAmount',
-        'SSI.ITMS_NM',
+        'SSI.ITMS_NM as itmsNm',
       ])
       .where('SIS.USR_SEQ = :userSequence', { userSequence: userSequence })
       .innerJoin(SpoStockInfo, 'SSI', 'SIS.STK_INFO_SEQ = SSI.STK_INFO_SEQ')
