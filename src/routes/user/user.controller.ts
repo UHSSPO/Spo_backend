@@ -6,11 +6,13 @@ import {
   Put,
   UseGuards,
   Request,
+  Delete,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   ChangeNickNameRes,
   ChangePasswordRes,
+  DeleteUserRes,
   InvestPropensityRes,
   SelectMyInfoRes,
 } from './dto/res.dto';
@@ -18,6 +20,7 @@ import { UserService } from './user.service';
 import {
   ChangeNickNameReqBody,
   ChangePasswordReqBody,
+  DeleteUserReqBody,
   InvestPropensityReqBody,
 } from './dto/req.dto';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
@@ -90,5 +93,22 @@ export class UserController {
     @Param('userSequence') userSequence: number,
   ): Promise<InvestPropensityRes> {
     return this.userService.userInvestPropensity(reqBody, userSequence);
+  }
+
+  @Delete('/delete')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: DeleteUserRes,
+  })
+  @ApiOperation({
+    summary: '회원 탈퇴',
+  })
+  async deleteUser(
+    @Body() reqBody: DeleteUserReqBody,
+    @Request() req,
+  ): Promise<DeleteUserRes> {
+    return this.userService.deleteUser(req.user, reqBody);
   }
 }

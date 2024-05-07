@@ -12,6 +12,16 @@ export class InvestPropensityReqBody {
   totalScore: number;
 }
 
+export class DeleteUserReqBody {
+  @IsNotEmpty({ message: '비밀번호는 필수입니다.' })
+  @ApiProperty({
+    example: '123456789',
+    description: '비밀번호',
+    required: true,
+  })
+  password: string;
+}
+
 export class ChangePasswordReqBody {
   @IsNotEmpty({ message: '현재 비밀번호는 필수입니다.' })
   @ApiProperty({

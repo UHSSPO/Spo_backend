@@ -10,6 +10,15 @@ export class InvestPropensityRes {
   investPropensity: string;
 }
 
+export class DeleteUserRes {
+  @ApiProperty({
+    example: 'Y',
+    description: '탈퇴 여부',
+    required: true,
+  })
+  deleteYn: string;
+}
+
 export class ChangePasswordRes {
   @ApiProperty({
     example: 'Y',

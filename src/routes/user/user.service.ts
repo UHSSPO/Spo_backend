@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   ChangeNickNameReqBody,
   ChangePasswordReqBody,
+  DeleteUserReqBody,
   InvestPropensityReqBody,
 } from './dto/req.dto';
 import { DataSource, Repository } from 'typeorm';
@@ -10,6 +11,7 @@ import { IUserInterface } from '../../common/interface/user.interface';
 import {
   ChangeNickNameRes,
   ChangePasswordRes,
+  DeleteUserRes,
   SelectMyInfoRes,
 } from './dto/res.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -187,5 +189,38 @@ export class UserService {
     });
 
     return { changeNickNameYn: 'Y' };
+  }
+
+  async deleteUser(
+    userInfo: IUserInterface,
+    { password }: DeleteUserReqBody,
+  ): Promise<DeleteUserRes> {
+    await this.dataSource.transaction(async (manager) => {
+      const user: SpoUser = await manager.findOne(SpoUser, {
+        where: { userSequence: userInfo.userSequence },
+      });
+
+      if (user) {
+        const match = await compare(password, user.pwd);
+
+        if (match) {
+          await manager.update(
+            SpoUser,
+            {
+              userSequence: userInfo.userSequence,
+            },
+            {
+              deleteYn: 'Y',
+            },
+          );
+        } else {
+          throw new HttpException(
+            '비밀번호가 일치하지 않습니다.',
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+      }
+    });
+    return { deleteYn: 'Y' };
   }
 }
