@@ -470,7 +470,7 @@ export class VirtualService {
         'SUI.PRFIT_LOS_SALES as profitLossSales',
         'SUI.VALU_AMT as valueAmount',
         'SUI.USR_FLR_RT as userFltRt',
-        'SU.NICK_NAM',
+        'SU.NICK_NAM as nickName',
       ])
       .innerJoin(SpoUser, 'SU', 'SU.USR_SEQ = SUI.USR_SEQ')
       .orderBy('SUI.USR_FLR_RT', 'DESC')
