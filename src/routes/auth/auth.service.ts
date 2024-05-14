@@ -51,7 +51,7 @@ export class AuthService {
     const response = {
       nickName: data.kakao_account.profile.nickname,
       email: data.kakao_account.email,
-      check: !!user,
+      check: !!user && user.deleteYn === 'Y',
     };
 
     return response;
@@ -101,6 +101,7 @@ export class AuthService {
   async getUserByUserEmail(email: string): Promise<SpoUser> {
     return await this.userRepository.findOneBy({
       email,
+      deleteYn: 'N',
     });
   }
 

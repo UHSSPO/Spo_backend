@@ -307,6 +307,12 @@ export class VirtualService {
       const userInvestInfo = await manager.findOne(SpoUserInvestment, {
         where: { userSequence: userInfo.userSequence },
       });
+      if (StringUtil.isEmpty(userInvestmentStockInfo)) {
+        throw new HttpException(
+          '매수 내역이 없는 주식입니다.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       if (userInvestmentStockInfo.quantity < quantity) {
         throw new HttpException(
@@ -474,6 +480,7 @@ export class VirtualService {
       ])
       .innerJoin(SpoUser, 'SU', 'SU.USR_SEQ = SUI.USR_SEQ')
       .orderBy('SUI.USR_FLR_RT', 'DESC')
+      .limit(5)
       .getRawMany();
   }
 
