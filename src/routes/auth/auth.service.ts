@@ -58,21 +58,34 @@ export class AuthService {
   }
 
   async signUp(reqBody: CreateUserDto): Promise<SpoUser> {
-    const user = await this.getUserByUserEmail(reqBody.email);
+    const userInfo = await this.getUserByUserEmailDelete(reqBody.email);
 
-    if (!user) {
+    if (!userInfo || userInfo.deleteYn === 'Y') {
       const encryptedPassword = await this.encryptPassword(reqBody.pwd);
       const savedUser = await this.dataSource.transaction(async (manager) => {
         const user = new SpoUser();
-        user.email = reqBody.email;
-        user.pwd = encryptedPassword;
-        user.signUpChannel = reqBody.signUpChannel;
-        user.userRole = 'USR';
-        user.nickName = reqBody.nickName;
-        user.dateOfBirth = reqBody.dateOfBirth;
-
-        await manager.save(user);
-        return user;
+        if (userInfo.deleteYn === 'Y') {
+          await manager.update(
+            SpoUser,
+            { userSequence: userInfo.userSequence },
+            {
+              deleteYn: 'N',
+              pwd: encryptedPassword,
+              nickName: reqBody.nickName,
+            },
+          );
+          return userInfo;
+        } else {
+          user.email = reqBody.email;
+          user.pwd = encryptedPassword;
+          user.signUpChannel = reqBody.signUpChannel;
+          user.userRole = 'USR';
+          user.nickName = reqBody.nickName;
+          user.dateOfBirth = reqBody.dateOfBirth;
+          user.deleteYn = 'N';
+          await manager.save(user);
+          return user;
+        }
       });
       return savedUser;
     } else {
@@ -102,6 +115,12 @@ export class AuthService {
     return await this.userRepository.findOneBy({
       email,
       deleteYn: 'N',
+    });
+  }
+
+  async getUserByUserEmailDelete(email: string): Promise<SpoUser> {
+    return await this.userRepository.findOneBy({
+      email,
     });
   }
 

@@ -1046,6 +1046,7 @@ export class BatchService implements OnApplicationBootstrap {
         }
       });
       this.logger.log(`Success updateVirtualUserProfit Update`);
+      await this.updateVirtualStockProfit();
     }
   }
 }
