@@ -479,6 +479,7 @@ export class VirtualService {
         'SU.NICK_NAM as nickName',
       ])
       .innerJoin(SpoUser, 'SU', 'SU.USR_SEQ = SUI.USR_SEQ')
+      .where('SUI.USR_FLR_RT != 0 AND SUI.PRFIT_LOS_SALES != 0')
       .orderBy('SUI.USR_FLR_RT', 'DESC')
       .limit(5)
       .getRawMany();
