@@ -49,9 +49,9 @@ export class BatchService implements OnApplicationBootstrap {
   private derivationMarketIndexInfoResData: Array<IMarketIndexInfoRes> = [];
 
   onApplicationBootstrap() {
-    // this.shouldRunBatch =
-    //   process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
-    this.shouldRunBatch = true;
+    this.shouldRunBatch =
+      process.env.NODE_ENV !== 'dev' && !isWeekend(new Date());
+    // this.shouldRunBatch = true;
   }
 
   // 상장 종목 정보 조회 배치
@@ -469,7 +469,6 @@ export class BatchService implements OnApplicationBootstrap {
   async updateStockPriceYearInfo() {
     if (this.shouldRunBatch) {
       const basDt = StringUtil.getYearDate();
-      console.log(basDt);
       try {
         const stockPriceYearInfoRes: any = await axios.get(
           `${
@@ -760,13 +759,17 @@ export class BatchService implements OnApplicationBootstrap {
 
                 enterpriseCategoryInfo.moveAverage =
                   BatchCalculator.calculateMovingAverage(stock15thPriceInfos); // 이동평균선 계산
-                enterpriseCategoryInfo.volume = parseFloat(
-                  (
-                    ((stockPriceInfo.trqu - yesterdayStockPriceInfo.trqu) /
-                      yesterdayStockPriceInfo.trqu) *
-                    100
-                  ).toFixed(2),
-                ); // {(현재거래량- 이전거래량)/ 이전거래량} * 100
+                if (yesterdayStockPriceInfo.trqu === 0) {
+                  enterpriseCategoryInfo.volume = 0;
+                } else {
+                  enterpriseCategoryInfo.volume = parseFloat(
+                    (
+                      ((stockPriceInfo.trqu - yesterdayStockPriceInfo.trqu) /
+                        yesterdayStockPriceInfo.trqu) *
+                      100
+                    ).toFixed(2),
+                  ); // {(현재거래량- 이전거래량)/ 이전거래량} * 100
+                }
 
                 enterpriseCategoryInfo.changeMarketGap = parseFloat(
                   (
