@@ -64,7 +64,17 @@ export class AuthService {
       const encryptedPassword = await this.encryptPassword(reqBody.pwd);
       const savedUser = await this.dataSource.transaction(async (manager) => {
         const user = new SpoUser();
-        if (userInfo.deleteYn === 'Y') {
+        if (!userInfo) {
+          user.email = reqBody.email;
+          user.pwd = encryptedPassword;
+          user.signUpChannel = reqBody.signUpChannel;
+          user.userRole = 'USR';
+          user.nickName = reqBody.nickName;
+          user.dateOfBirth = reqBody.dateOfBirth;
+          user.deleteYn = 'N';
+          await manager.save(user);
+          return user;
+        } else if (userInfo.deleteYn === 'Y') {
           await manager.update(
             SpoUser,
             { userSequence: userInfo.userSequence },
@@ -75,16 +85,6 @@ export class AuthService {
             },
           );
           return userInfo;
-        } else {
-          user.email = reqBody.email;
-          user.pwd = encryptedPassword;
-          user.signUpChannel = reqBody.signUpChannel;
-          user.userRole = 'USR';
-          user.nickName = reqBody.nickName;
-          user.dateOfBirth = reqBody.dateOfBirth;
-          user.deleteYn = 'N';
-          await manager.save(user);
-          return user;
         }
       });
       return savedUser;
