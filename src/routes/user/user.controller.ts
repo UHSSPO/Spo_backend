@@ -95,7 +95,7 @@ export class UserController {
     return this.userService.userInvestPropensity(reqBody, userSequence);
   }
 
-  @Delete('/delete')
+  @Put('/delete')
   @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 200,
