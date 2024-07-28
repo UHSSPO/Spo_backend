@@ -45,8 +45,8 @@ export class ChatGateway
     const decoded = this.jwtService.verify(token, {
       secret: process.env.JWT_SECRET,
     });
-    this.server.to(decoded.userId).emit('message', payload);
-    const roomId = decoded.userId;
+    this.server.to(decoded.email).emit('message', payload);
+    const roomId = decoded.email;
     await this.chatService.saveMessage(roomId, payload.sender, payload.message);
     this.server.to(roomId).emit('message', payload);
   }
@@ -65,8 +65,8 @@ export class ChatGateway
       const payload = this.jwtService.verify(token, {
         secret: process.env.JWT_SECRET,
       });
-      client.join(payload.userId);
-      this.loadChatHistory(client, payload.userId);
+      client.join(payload.email);
+      this.loadChatHistory(client, payload.email);
       this.logger.log(`Client connected: ${client.id}`);
     } catch (error) {
       this.logger.error('Invalid token', args);
