@@ -12,6 +12,8 @@ import { SuccessInterceptor } from './common/interceptor/success.interceptor';
 import { UserModule } from './routes/user/user.module';
 import { BoardModule } from './routes/board/board.module';
 import { VirtualModule } from './routes/virtual/virtual.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { VirtualModule } from './routes/virtual/virtual.module';
     StockModule,
     UserModule,
     BoardModule,
+    ChatModule,
     VirtualModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
@@ -30,24 +33,25 @@ import { VirtualModule } from './routes/virtual/virtual.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        return {
-          type: 'mariadb',
-          username: configService.get<string>('DB_USERNAME'),
-          password: configService.get<string>('DB_PASSWORD'),
-          port: configService.get<number>('DB_PORT'),
-          host: configService.get<string>('DB_HOST'),
-          database: configService.get<string>('DB_NAME'),
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          charset: 'utf8mb4',
-          collation: 'utf8mb4_unicode_ci',
-          synchronize: false,
-          timezone: 'Z',
-          bigNumberStrings: false,
-          logger: new DatabaseLogger(),
-        };
-      },
+      useFactory: (configService: ConfigService) => ({
+        type: 'mariadb',
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        port: configService.get<number>('DB_PORT'),
+        host: configService.get<string>('DB_HOST'),
+        database: configService.get<string>('DB_NAME'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        charset: 'utf8mb4',
+        collation: 'utf8mb4_unicode_ci',
+        synchronize: false,
+        timezone: 'Z',
+        bigNumberStrings: false,
+        logger: new DatabaseLogger(),
+      }),
     }),
+    MongooseModule.forRoot(
+      'mongodb+srv://swkim:iTFXEkpLHxu2sdJG@spo.lcnbgw9.mongodb.net/?retryWrites=true&w=majority&appName=spo',
+    ),
   ],
   controllers: [],
   providers: [
